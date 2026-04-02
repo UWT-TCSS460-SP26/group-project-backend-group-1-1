@@ -16,7 +16,10 @@ app.use(logger);
 // OpenAPI documentation
 const specFile = fs.readFileSync('./openapi.yaml', 'utf8');
 const spec = YAML.parse(specFile);
-app.use('/api-docs', apiReference({ spec }));
+app.get('/openapi.json', (_request: Request, response: Response) => {
+  response.json(spec);
+});
+app.use('/api-docs', apiReference({ spec: { url: '/openapi.json' } }));
 
 // Routes
 app.use(routes);
