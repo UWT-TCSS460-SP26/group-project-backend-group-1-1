@@ -18,10 +18,17 @@ app.get('/openapi.json', (_request: Request, response: Response) => {
 });
 app.use('/api-docs', apiReference({ spec: { url: '/openapi.json' } }));
 
+// MARK: Health
+app.get('/health', (_request: Request, response: Response) => {
+  response.json({ message: 'GOOD' });
+});
+
 // Routes
 app.get('/hello', (_request: Request, response: Response) => {
   response.json({ message: 'Hello, TCSS 460!' });
 });
+
+// MARK: Harleen
 app.get('/hello/harleen', (_request: Request, response: Response) => {
   response.json({ message: 'Hello, Harleen!' });
 });
@@ -36,15 +43,11 @@ app.get('/hello/nate', (_request: Request, response: Response) => {
   response.json({ message: 'Hello Nate!' });
 });
 
-// MARK: Nate
+// MARK: Jonathan
 app.get('/hello/jonathan', (_request: Request, response: Response) => {
   response.json({ message: 'Hello, Jonathan!' });
 });
 
-// MARK: Health
-app.get('/health', (_request: Request, response: Response) => {
-  response.json({ message: 'GOOD' });
-});
 
 // 404 handler — must be after all routes
 app.use((_request: Request, response: Response) => {
