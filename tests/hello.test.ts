@@ -8,3 +8,11 @@ describe('Hello Route', () => {
     expect(response.body.message).toBe('Hello, TCSS 460!');
   });
 });
+
+describe('Health', () => {
+  it('GET /health — returns GOOD', async () => {
+    const response = await request(app).get('/health');
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe('GOOD');
+  });
+});
