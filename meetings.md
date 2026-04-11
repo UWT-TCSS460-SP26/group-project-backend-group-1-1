@@ -30,7 +30,7 @@ RESPONSES
 - Hasimar:
 - Harleen:
 - Jonathan:
-- Nathaniel: Strengths: system design, architecture, troubleshooting (sometimes) , Weakness: API drift, loosing momentum, versioning.
+- Nathaniel: Strengths: system design, architecture, troubleshooting (sometimes) Weakness: API drift, loosing momentum, versioning.
 
 #### What other obligations take time away from your ability to work on this project? 
 
@@ -56,7 +56,7 @@ RESPONSES
 - Hasimar:
 - Harleen:
 - Jonathan:
-- Nathaniel: I like more distributed/democrotized leadership (more ownership)
+- Nathaniel: I like more distributed/democratize leadership (more ownership)
 
 Who are the Subject Matter Experts (SME) for different areas? GUI, OO, Logic, Management,  etc. 
 
@@ -88,7 +88,7 @@ RESPONSES
 - Hasimar:
 - Harleen:
 - Jonathan:
-- Nathaniel: Good with design/scope, and some networking.
+- Nathaniel: Good with design/scope, and some networking. Open to pair with anyone unclear in those.
 
 Who has Git experience and/or wants to dive into working with Git and GitHub to become the group's Git SME? 
 
@@ -96,7 +96,7 @@ RESPONSES
 - Hasimar:
 - Harleen:
 - Jonathan:
-- Nathaniel: Temp for SPRINT 0/1.
+- Nathaniel: Temp for SPRINT 0 / maybe 1.
 
 ### Agenda Item 5:
 
@@ -113,9 +113,9 @@ RESPONSES
 The group needs to meet synchronously (online is OK) AT LEAST 3 times a Week. What times/days work for everyone? 
 
 RESPONSES
-- Hasimar:
-- Harleen:
-- Jonathan:
+- Hasimar: I’m not free Sunday until after 7-8.
+- Harleen: Weekends.
+- Jonathan: most days except weekends.
 - Nathaniel: any days, any time, except Tuesdays and Thursdays (can meet briefly after class ~30 min)
 
 ### Agenda Item 7: 
