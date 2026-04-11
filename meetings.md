@@ -1,16 +1,17 @@
 ### Agenda Item 1: 
-  
+
 Meeting Manager: Nathaniel
 
 ### Agenda Item 2: 
 
-Meeting Scribe: 
+Meeting Scribe:
 
 ### Agenda Item 3: 
 
 #### What is your name/nickname and what do you prefer to be called? 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -19,6 +20,7 @@ RESPONSES
 #### Where did you do Freshman/Sophomore year and/or where did you take 142/143?  Did your 142/143 prepare you for this course? 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -27,6 +29,7 @@ RESPONSES
 #### What are your programming strengths and weaknesses? 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -35,6 +38,7 @@ RESPONSES
 #### What other obligations take time away from your ability to work on this project? 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -43,6 +47,7 @@ RESPONSES
 #### What is something you want others to know about yourself? 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -53,6 +58,7 @@ RESPONSES
 Do you want to have a dedicated group leader?
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -61,6 +67,7 @@ RESPONSES
 Who are the Subject Matter Experts (SME) for different areas? GUI, OO, Logic, Management,  etc. 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -69,14 +76,16 @@ RESPONSES
 Students A and B pair program together while students C and D pair program together. 
 
 RESPONSES
-- Hasimar: 
-- Harleen: 
-- Jonathan: 
+
+- Hasimar:
+- Harleen:
+- Jonathan:
 - Nathaniel: Open to pair with anyone, I know surface level web dev.
 
 Student A is a dedicated tester/Unit test creator.
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -85,6 +94,7 @@ RESPONSES
 Consider your group's strengths and weaknesses. Pair a weak programmer with a strong programmer for pair programming sessions. 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -93,6 +103,7 @@ RESPONSES
 Who has Git experience and/or wants to dive into working with Git and GitHub to become the group's Git SME? 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -103,6 +114,7 @@ RESPONSES
 Discuss your concerns for the group project. Air any bad experiences from group work in the past. Discuss what you want to get out of this group project. Discuss strategies you think can work for a successful group project. 
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
@@ -113,6 +125,7 @@ RESPONSES
 The group needs to meet synchronously (online is OK) AT LEAST 3 times a Week. What times/days work for everyone? 
 
 RESPONSES
+
 - Hasimar: I’m not free Sunday until after 7-8.
 - Harleen: Weekends.
 - Jonathan: most days except weekends.
@@ -123,6 +136,7 @@ RESPONSES
 Wrap-up
 
 RESPONSES
+
 - Hasimar:
 - Harleen:
 - Jonathan:
