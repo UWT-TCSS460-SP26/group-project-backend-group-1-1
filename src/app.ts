@@ -18,29 +18,6 @@ app.get('/openapi.json', (_request: Request, response: Response) => {
 });
 app.use('/api-docs', apiReference({ spec: { url: '/openapi.json' } }));
 
-// Routes
-app.get('/hello', (_request: Request, response: Response) => {
-  response.json({ message: 'Hello, TCSS 460!' });
-});
-app.get('/hello/harleen', (_request: Request, response: Response) => {
-  response.json({ message: 'Hello, Harleen!' });
-});
-
-// MARK: Harsirmar
-app.get('/hello/harsimar', (_request: Request, response: Response) => {
-  response.json({ message: 'Hello Harsimar!' });
-});
-
-// MARK: Nate
-app.get('/hello/nate', (_request: Request, response: Response) => {
-  response.json({ message: 'Hello Nate!' });
-});
-
-// MARK: Nate
-app.get('/hello/jonathan', (_request: Request, response: Response) => {
-  response.json({ message: 'Hello, Jonathan!' });
-});
-
 // MARK: Health
 app.get('/health', (_request: Request, response: Response) => {
   response.json({ message: 'GOOD' });
