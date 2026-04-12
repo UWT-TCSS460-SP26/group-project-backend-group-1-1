@@ -12,7 +12,7 @@ Meeting Scribe:
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: Sim
 - Harleen:
 - Jonathan:
 - Nathaniel: Nate
@@ -21,7 +21,7 @@ RESPONSES
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: I did the 142/143 equivalent at Washington State University. I feel as though it did prepare me for this course. 
 - Harleen:
 - Jonathan:
 - Nathaniel: 142/143 at South Seattle community college.
@@ -30,7 +30,7 @@ RESPONSES
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: Strengths: Java, Javascript, problem-solving Weakness: API design and testing (still improving)
 - Harleen:
 - Jonathan:
 - Nathaniel: Strengths: system design, architecture, troubleshooting (sometimes) Weakness: API drift, loosing momentum, versioning.
@@ -39,7 +39,7 @@ RESPONSES
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: Other classes are also heavily project based and work commitments. 
 - Harleen:
 - Jonathan:
 - Nathaniel: 20 credits this quarter.
@@ -48,7 +48,7 @@ RESPONSES
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: I like anime, video games, and recently picked up clay as a new hobby.
 - Harleen:
 - Jonathan:
 - Nathaniel: I like Tea, I like watching CPPCON on youtube to learn about new things. I like watching the NBA my favorite team is the 2014 Spurs.
@@ -59,7 +59,7 @@ Do you want to have a dedicated group leader?
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: I prefer everyone sharing responsibility. 
 - Harleen:
 - Jonathan:
 - Nathaniel: I like more distributed/democratize leadership (more ownership)
@@ -68,7 +68,7 @@ Who are the Subject Matter Experts (SME) for different areas? GUI, OO, Logic, Ma
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: GUI, some OO, frontend logic, and some GIT
 - Harleen:
 - Jonathan:
 - Nathaniel: OO, some Git, some Management (YouTrack)
@@ -77,8 +77,8 @@ Students A and B pair program together while students C and D pair program toget
 
 RESPONSES
 
-- Hasimar:
-- Harleen:
+- Hasimar: Open to pairing with anyone
+- Harleen: Open to pair with anyone
 - Jonathan:
 - Nathaniel: Open to pair with anyone, I know surface level web dev.
 
@@ -86,7 +86,7 @@ Student A is a dedicated tester/Unit test creator.
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: Open to it
 - Harleen:
 - Jonathan:
 - Nathaniel: N/A
@@ -95,7 +95,7 @@ Consider your group's strengths and weaknesses. Pair a weak programmer with a st
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: Comfortable with frontend and debugging, still working on backend skills. Open to pairing with anyone who wants to strengthen their skills together.
 - Harleen:
 - Jonathan:
 - Nathaniel: Good with design/scope, and some networking. Open to pair with anyone unclear in those.
@@ -104,7 +104,7 @@ Who has Git experience and/or wants to dive into working with Git and GitHub to 
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: I have some knowledge and experience with Git and GitHub and am comfortable helping out when needed.
 - Harleen:
 - Jonathan:
 - Nathaniel: Temp for SPRINT 0 / maybe 1.
@@ -115,7 +115,8 @@ Discuss your concerns for the group project. Air any bad experiences from group 
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: No concerns, but I think having regular meetings will help us collaborate better. Focusing on starting tasks early
+would be good so we have time to handle issues.
 - Harleen:
 - Jonathan:
 - Nathaniel: N/A, I'd like time for pair programming and meetings. Keeping in contact through sprints is important.
@@ -126,7 +127,7 @@ The group needs to meet synchronously (online is OK) AT LEAST 3 times a Week. Wh
 
 RESPONSES
 
-- Hasimar: I’m not free Sunday until after 7-8.
+- Hasimar: Any day and time but preferably weekdays (I work weekends)
 - Harleen: Weekends.
 - Jonathan: most days except weekends.
 - Nathaniel: any days, any time, except Tuesdays and Thursdays (can meet briefly after class ~30 min)
@@ -137,7 +138,7 @@ Wrap-up
 
 RESPONSES
 
-- Hasimar:
+- Hasimar: N/A
 - Harleen:
 - Jonathan:
 - Nathaniel: N/A
