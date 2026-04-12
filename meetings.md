@@ -13,7 +13,7 @@ Meeting Scribe:
 RESPONSES
 
 - Hasimar: Sim
-- Harleen:
+- Harleen: Harleen
 - Jonathan:
 - Nathaniel: Nate
 
@@ -22,7 +22,7 @@ RESPONSES
 RESPONSES
 
 - Hasimar: I did the 142/143 equivalent at Washington State University. I feel as though it did prepare me for this course. 
-- Harleen:
+- Harleen: 142/143 at Green River College.
 - Jonathan:
 - Nathaniel: 142/143 at South Seattle community college.
 
@@ -31,7 +31,7 @@ RESPONSES
 RESPONSES
 
 - Hasimar: Strengths: Java, Javascript, problem-solving Weakness: API design and testing (still improving)
-- Harleen:
+- Harleen: Strengths: object-oriented design, problem-solving, debugging. Weaknesses: code optimization, maintaining consistency across projects, staying efficient with newer tools/APIs
 - Jonathan:
 - Nathaniel: Strengths: system design, architecture, troubleshooting (sometimes) Weakness: API drift, loosing momentum, versioning.
 
@@ -40,7 +40,7 @@ RESPONSES
 RESPONSES
 
 - Hasimar: Other classes are also heavily project based and work commitments. 
-- Harleen:
+- Harleen: other two classes are also project heavy classes. 
 - Jonathan:
 - Nathaniel: 20 credits this quarter.
 
@@ -49,7 +49,7 @@ RESPONSES
 RESPONSES
 
 - Hasimar: I like anime, video games, and recently picked up clay as a new hobby.
-- Harleen:
+- Harleen: I love turning random ideas into actual projects, and outside of coding I’m really into fitness and trying new things. 
 - Jonathan:
 - Nathaniel: I like Tea, I like watching CPPCON on youtube to learn about new things. I like watching the NBA my favorite team is the 2014 Spurs.
 
@@ -60,7 +60,7 @@ Do you want to have a dedicated group leader?
 RESPONSES
 
 - Hasimar: I prefer everyone sharing responsibility. 
-- Harleen:
+- Harleen:  Yes, having a dedicated group leader could help keep the team organized, ensures clear communication, and keeps everyone accountable.
 - Jonathan:
 - Nathaniel: I like more distributed/democratize leadership (more ownership)
 
@@ -69,7 +69,7 @@ Who are the Subject Matter Experts (SME) for different areas? GUI, OO, Logic, Ma
 RESPONSES
 
 - Hasimar: GUI, some OO, frontend logic, and some GIT
-- Harleen:
+- Harleen: GUI, OO, Logic, Some Managment 
 - Jonathan:
 - Nathaniel: OO, some Git, some Management (YouTrack)
 
@@ -78,7 +78,7 @@ Students A and B pair program together while students C and D pair program toget
 RESPONSES
 
 - Hasimar: Open to pairing with anyone
-- Harleen: Open to pair with anyone
+- Harleen: I am open to pair with anyone (maybe whoever's schedules aligns more)
 - Jonathan:
 - Nathaniel: Open to pair with anyone, I know surface level web dev.
 
@@ -96,7 +96,7 @@ Consider your group's strengths and weaknesses. Pair a weak programmer with a st
 RESPONSES
 
 - Hasimar: Comfortable with frontend and debugging, still working on backend skills. Open to pairing with anyone who wants to strengthen their skills together.
-- Harleen:
+- Harleen: Strong in OOP and backend development; can pair with someone needing help with structure or understanding classes and design.
 - Jonathan:
 - Nathaniel: Good with design/scope, and some networking. Open to pair with anyone unclear in those.
 
@@ -105,7 +105,7 @@ Who has Git experience and/or wants to dive into working with Git and GitHub to 
 RESPONSES
 
 - Hasimar: I have some knowledge and experience with Git and GitHub and am comfortable helping out when needed.
-- Harleen:
+- Harleen: Little experience with Git and GitHub (branching, pushing, resolving basic issues) and interested in becoming the group’s Git SME and improving further.
 - Jonathan:
 - Nathaniel: Temp for SPRINT 0 / maybe 1.
 
@@ -117,7 +117,7 @@ RESPONSES
 
 - Hasimar: No concerns, but I think having regular meetings will help us collaborate better. Focusing on starting tasks early
 would be good so we have time to handle issues.
-- Harleen:
+- Harleen: I want to make sure everyone contributes equally and we avoid last-minute stress, since I’ve had past group experiences where work wasn’t balanced. I’m hoping to improve collaboration skills and build a strong project by using clear roles, regular check-ins, and proper Git workflow.
 - Jonathan:
 - Nathaniel: N/A, I'd like time for pair programming and meetings. Keeping in contact through sprints is important.
 
@@ -128,7 +128,7 @@ The group needs to meet synchronously (online is OK) AT LEAST 3 times a Week. Wh
 RESPONSES
 
 - Hasimar: Any day and time but preferably weekdays (I work weekends)
-- Harleen: Weekends.
+- Harleen: any time Monday, friday and Weekends (can meet after class as well).
 - Jonathan: most days except weekends.
 - Nathaniel: any days, any time, except Tuesdays and Thursdays (can meet briefly after class ~30 min)
 
@@ -139,6 +139,6 @@ Wrap-up
 RESPONSES
 
 - Hasimar: N/A
-- Harleen:
+- Harleen: N/A
 - Jonathan:
 - Nathaniel: N/A
