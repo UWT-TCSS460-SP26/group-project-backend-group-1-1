@@ -33,4 +33,4 @@ API documentation is at [http://localhost:3000/api-docs](http://localhost:3000/a
 
 ## Deployed URL
 
-[http://localhost:3000/health](http://localhost:3000/health)
+[https://tcss460-team-1-api.onrender.com](https://tcss460-team-1-api.onrender.com)
