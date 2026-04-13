@@ -15,9 +15,9 @@ cp .env.example .env
 npm run dev
 ```
 
-The server starts at [http://localhost:3000](http://localhost:3000).
+The server starts at [https://tcss460-team-1-api.onrender.com](https://tcss460-team-1-api.onrender.com).
 
-API documentation is at [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
+API documentation is at [https://tcss460-team-1-api.onrender.com/api-docs](https://tcss460-team-1-api.onrender.com/api-docs).
 
 ## Scripts
 

@@ -6,12 +6,12 @@ info:
 
     **Description:** A RESTful API for the TCSS 460 group project, providing health monitoring and core functionality.
 
-    **Deployed URL:** http://localhost:3000/health
+    **Deployed URL:** https://tcss460-team-1-api.onrender.com/health
   version: 0.1.0
 
 servers:
-  - url: http://localhost:3000
-    description: Local development
+  - url: https://tcss460-team-1-api.onrender.com
+    description: Production
 
 tags:
   - name: Health
