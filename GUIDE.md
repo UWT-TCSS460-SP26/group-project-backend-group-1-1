@@ -10,15 +10,15 @@ Base URL: `https://tcss460-team-1-api.onrender.com`
 
 **6 content routes** (same pattern — search / popular / details — for both media types), plus the existing health check.
 
-| #  | Method | Path              | Purpose             |
-| -- | ------ | ----------------- | ------------------- |
-| 1  | GET    | `/movies/search`  | Search movies       |
-| 2  | GET    | `/movies/popular` | Popular movies list |
-| 3  | GET    | `/movies/:id`     | Movie details       |
-| 4  | GET    | `/tv/search`      | Search TV shows     |
-| 5  | GET    | `/tv/popular`     | Popular TV list     |
-| 6  | GET    | `/tv/:id`         | TV show details     |
-| +1 | GET    | `/health`         | Health check        |
+| #   | Method | Path              | Purpose             |
+| --- | ------ | ----------------- | ------------------- |
+| 1   | GET    | `/movies/search`  | Search movies       |
+| 2   | GET    | `/movies/popular` | Popular movies list |
+| 3   | GET    | `/movies/:id`     | Movie details       |
+| 4   | GET    | `/tv/search`      | Search TV shows     |
+| 5   | GET    | `/tv/popular`     | Popular TV list     |
+| 6   | GET    | `/tv/:id`         | TV show details     |
+| +1  | GET    | `/health`         | Health check        |
 
 = **7 total routes.**
 
@@ -115,9 +115,9 @@ Responses:
 
 ```json
 {
-  "small":  "https://image.tmdb.org/t/p/w342/abc.jpg",
+  "small": "https://image.tmdb.org/t/p/w342/abc.jpg",
   "medium": "https://image.tmdb.org/t/p/w500/abc.jpg",
-  "large":  "https://image.tmdb.org/t/p/original/abc.jpg"
+  "large": "https://image.tmdb.org/t/p/original/abc.jpg"
 }
 ```
 
@@ -169,10 +169,12 @@ Extends `MovieSummary` with the fields below. Returned only by `GET /movies/:id`
   "status": "Released",
   "homepage": "https://...",
   "imdbId": "tt0137523",
-  "genres": [ { "id": 18, "name": "Drama" } ],
-  "spokenLanguages": [ { "code": "en", "name": "English" } ],
-  "productionCompanies": [ { "id": 508, "name": "Regency Enterprises", "logo": null, "country": "US" } ],
-  "productionCountries": [ { "code": "US", "name": "United States" } ],
+  "genres": [{ "id": 18, "name": "Drama" }],
+  "spokenLanguages": [{ "code": "en", "name": "English" }],
+  "productionCompanies": [
+    { "id": 508, "name": "Regency Enterprises", "logo": null, "country": "US" }
+  ],
+  "productionCountries": [{ "code": "US", "name": "United States" }],
   "budget": 63000000,
   "revenue": 100853753,
   "collection": null
@@ -190,6 +192,8 @@ Envelope returned by `/movies/search` and `/movies/popular`.
   "page": 1,
   "totalPages": 42,
   "totalResults": 836,
-  "results": [ /* MovieSummary[] */ ]
+  "results": [
+    /* MovieSummary[] */
+  ]
 }
 ```
