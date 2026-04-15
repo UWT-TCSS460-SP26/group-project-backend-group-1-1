@@ -16,6 +16,8 @@ servers:
 tags:
   - name: Health
     description: Health check endpoints
+  - name: Movies
+    description: Movie search, popular, and detail endpoints
 
 paths:
   /health:
@@ -34,3 +36,295 @@ paths:
                   message:
                     type: string
                     example: 'GOOD'
+
+  /movies/search:
+    get:
+      tags: [Movies]
+      summary: Search Movies
+      description: |
+        Search for movies by title. Returns a paginated list of lightweight
+        `MovieSummary` objects — enough data to render a card (poster, title,
+        year, rating, short synopsis) without a follow-up request.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (movie title or keywords).
+          schema:
+            type: string
+            example: fight club
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Paginated list of movie summaries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMovies'
+        '400':
+          description: Missing or invalid query parameter.
+
+  /movies/popular:
+    get:
+      tags: [Movies]
+      summary: Popular Movies
+      description: |
+        Returns the current list of popular movies as paginated `MovieSummary`
+        objects. Designed for grid/list views and featured carousels.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Paginated list of popular movie summaries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMovies'
+
+  /movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Movie Details
+      description: |
+        Returns full details for a single movie — everything in `MovieSummary`
+        plus runtime, genres, tagline, production companies, spoken languages,
+        budget, revenue, and collection info. Intended for the detail view
+        reached when a user taps a card.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Movie identifier.
+          schema:
+            type: integer
+            example: 550
+      responses:
+        '200':
+          description: Full movie details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetails'
+        '404':
+          description: Movie not found.
+
+components:
+  schemas:
+    Image:
+      type: object
+      description: Pre-built poster/backdrop URLs in three sizes.
+      properties:
+        small:
+          type: string
+          format: uri
+          example: https://image.tmdb.org/t/p/w342/abc.jpg
+        medium:
+          type: string
+          format: uri
+          example: https://image.tmdb.org/t/p/w500/abc.jpg
+        large:
+          type: string
+          format: uri
+          example: https://image.tmdb.org/t/p/original/abc.jpg
+
+    Rating:
+      type: object
+      properties:
+        average:
+          type: number
+          format: float
+          example: 8.4
+        count:
+          type: integer
+          example: 26871
+        scale:
+          type: integer
+          example: 10
+
+    Genre:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 28
+        name:
+          type: string
+          example: Action
+
+    Language:
+      type: object
+      properties:
+        code:
+          type: string
+          example: en
+        name:
+          type: string
+          example: English
+
+    Company:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        logo:
+          allOf:
+            - $ref: '#/components/schemas/Image'
+          nullable: true
+        country:
+          type: string
+          example: US
+
+    Collection:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        poster:
+          allOf:
+            - $ref: '#/components/schemas/Image'
+          nullable: true
+
+    MovieSummary:
+      type: object
+      description: Lightweight movie shape used in list/grid responses.
+      properties:
+        id:
+          type: integer
+          example: 550
+        title:
+          type: string
+          example: Fight Club
+        originalTitle:
+          type: string
+          example: Fight Club
+        synopsis:
+          type: string
+          example: A ticking-time-bomb insomniac and a slippery soap salesman...
+        releaseDate:
+          type: string
+          format: date
+          nullable: true
+          example: '1999-10-15'
+        releaseYear:
+          type: integer
+          nullable: true
+          example: 1999
+        poster:
+          allOf:
+            - $ref: '#/components/schemas/Image'
+          nullable: true
+        backdrop:
+          allOf:
+            - $ref: '#/components/schemas/Image'
+          nullable: true
+        rating:
+          $ref: '#/components/schemas/Rating'
+        popularity:
+          type: number
+          format: float
+          example: 61.4
+        originalLanguage:
+          type: string
+          example: en
+        genreIds:
+          type: array
+          items:
+            type: integer
+          example: [18, 53]
+        adult:
+          type: boolean
+          example: false
+
+    MovieDetails:
+      allOf:
+        - $ref: '#/components/schemas/MovieSummary'
+        - type: object
+          description: Full movie shape used in the detail view.
+          properties:
+            tagline:
+              type: string
+              nullable: true
+              example: Mischief. Mayhem. Soap.
+            runtimeMinutes:
+              type: integer
+              nullable: true
+              example: 139
+            status:
+              type: string
+              example: Released
+            homepage:
+              type: string
+              format: uri
+              nullable: true
+            imdbId:
+              type: string
+              nullable: true
+              example: tt0137523
+            genres:
+              type: array
+              items:
+                $ref: '#/components/schemas/Genre'
+            spokenLanguages:
+              type: array
+              items:
+                $ref: '#/components/schemas/Language'
+            productionCompanies:
+              type: array
+              items:
+                $ref: '#/components/schemas/Company'
+            productionCountries:
+              type: array
+              items:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: US
+                  name:
+                    type: string
+                    example: United States
+            budget:
+              type: integer
+              example: 63000000
+            revenue:
+              type: integer
+              example: 100853753
+            collection:
+              $ref: '#/components/schemas/Collection'
+
+    PaginatedMovies:
+      type: object
+      description: Paginated envelope returned by search and popular endpoints.
+      properties:
+        page:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 42
+        totalResults:
+          type: integer
+          example: 836
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieSummary'
