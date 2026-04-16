@@ -2,20 +2,22 @@ openapi: 3.0.3
 info:
   title: TCSS 460 Group Project API
   description: |
-    **Team:** Nate, Harleen, Harsimar, Jonathan
+    **Team:** OYaml
 
     **Description:** A RESTful API for the TCSS 460 group project, providing health monitoring and core functionality.
 
-    **Deployed URL:** http://localhost:3000
+    **Deployed URL:** https://tcss460-team-1-api.onrender.com/health
   version: 0.1.0
 
 servers:
-  - url: http://localhost:3000
-    description: Local development
+  - url: https://tcss460-team-1-api.onrender.com
+    description: Production
 
 tags:
   - name: Health
     description: Health check endpoints
+  - name: Movies
+    description: Movie search, popular, and detail endpoints
 
 paths:
   /health:
@@ -34,3 +36,97 @@ paths:
                   message:
                     type: string
                     example: 'GOOD'
+
+  /movies/popular:
+    get:
+      tags: [Movies]
+      summary: Popular Movies
+      description: |
+        Proxies TMDB's `/discover/movie?sort_by=popularity.desc` endpoint and
+        returns a trimmed response envelope suitable for list/grid views.
+
+        Reference implementation for all TMDB proxy routes — see
+        `src/routes/moviesPopular.ts` for the pattern to copy when adding
+        new proxy endpoints.
+      parameters:
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Paginated list of popular movies (trimmed schema).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PopularMoviesResponse'
+        '500':
+          description: TMDB API key not configured on the server.
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
+
+components:
+  schemas:
+    PopularMovieSummary:
+      type: object
+      description: |
+        Trimmed movie shape returned by `GET /movies/popular`.
+        Maps upstream TMDB field names to our public names.
+      properties:
+        id:
+          type: integer
+          description: TMDB movie ID.
+          example: 640146
+        title:
+          type: string
+          description: Movie title (mapped from upstream `original_title`).
+          example: 'Ant-Man and the Wasp: Quantumania'
+        overview:
+          type: string
+          description: Short plot synopsis.
+          example: 'Super-Hero partners Scott Lang and Hope van Dyne...'
+        poster_path:
+          type: string
+          nullable: true
+          description: Relative poster image path. Prepend `https://image.tmdb.org/t/p/w500` for a full URL.
+          example: '/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg'
+        release_date:
+          type: string
+          format: date
+          description: Theatrical release date (ISO 8601).
+          example: '2023-02-15'
+        language:
+          type: string
+          description: Original language code (mapped from upstream `original_language`).
+          example: en
+      required: [id, title, overview, poster_path, release_date, language]
+
+    PopularMoviesResponse:
+      type: object
+      description: Envelope returned by `GET /movies/popular`.
+      properties:
+        language:
+          type: string
+          description: The BCP-47 language tag that was used for the upstream request.
+          example: en-US
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PopularMovieSummary'
+      required: [language, page, results]
