@@ -37,48 +37,26 @@ paths:
                     type: string
                     example: 'GOOD'
 
-  /movies/search:
-    get:
-      tags: [Movies]
-      summary: Search Movies
-      description: |
-        Search for movies by title. Returns a paginated list of lightweight
-        `MovieSummary` objects — enough data to render a card (poster, title,
-        year, rating, short synopsis) without a follow-up request.
-      parameters:
-        - name: q
-          in: query
-          required: true
-          description: Search query (movie title or keywords).
-          schema:
-            type: string
-            example: fight club
-        - name: page
-          in: query
-          required: false
-          description: 1-based page number.
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-      responses:
-        '200':
-          description: Paginated list of movie summaries.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedMovies'
-        '400':
-          description: Missing or invalid query parameter.
-
   /movies/popular:
     get:
       tags: [Movies]
       summary: Popular Movies
       description: |
-        Returns the current list of popular movies as paginated `MovieSummary`
-        objects. Designed for grid/list views and featured carousels.
+        Proxies TMDB's `/discover/movie?sort_by=popularity.desc` endpoint and
+        returns a trimmed response envelope suitable for list/grid views.
+
+        Reference implementation for all TMDB proxy routes — see
+        `src/routes/moviesPopular.ts` for the pattern to copy when adding
+        new proxy endpoints.
       parameters:
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
         - name: page
           in: query
           required: false
@@ -89,242 +67,66 @@ paths:
             default: 1
       responses:
         '200':
-          description: Paginated list of popular movie summaries.
+          description: Paginated list of popular movies (trimmed schema).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedMovies'
-
-  /movies/{id}:
-    get:
-      tags: [Movies]
-      summary: Movie Details
-      description: |
-        Returns full details for a single movie — everything in `MovieSummary`
-        plus runtime, genres, tagline, production companies, spoken languages,
-        budget, revenue, and collection info. Intended for the detail view
-        reached when a user taps a card.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Movie identifier.
-          schema:
-            type: integer
-            example: 550
-      responses:
-        '200':
-          description: Full movie details.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MovieDetails'
-        '404':
-          description: Movie not found.
+                $ref: '#/components/schemas/PopularMoviesResponse'
+        '500':
+          description: TMDB API key not configured on the server.
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
 
 components:
   schemas:
-    Image:
+    PopularMovieSummary:
       type: object
-      description: Pre-built poster/backdrop URLs in three sizes.
-      properties:
-        small:
-          type: string
-          format: uri
-          example: https://image.tmdb.org/t/p/w342/abc.jpg
-        medium:
-          type: string
-          format: uri
-          example: https://image.tmdb.org/t/p/w500/abc.jpg
-        large:
-          type: string
-          format: uri
-          example: https://image.tmdb.org/t/p/original/abc.jpg
-
-    Rating:
-      type: object
-      properties:
-        average:
-          type: number
-          format: float
-          example: 8.4
-        count:
-          type: integer
-          example: 26871
-        scale:
-          type: integer
-          example: 10
-
-    Genre:
-      type: object
+      description: |
+        Trimmed movie shape returned by `GET /movies/popular`.
+        Maps upstream TMDB field names to our public names.
       properties:
         id:
           type: integer
-          example: 28
-        name:
-          type: string
-          example: Action
-
-    Language:
-      type: object
-      properties:
-        code:
-          type: string
-          example: en
-        name:
-          type: string
-          example: English
-
-    Company:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        logo:
-          allOf:
-            - $ref: '#/components/schemas/Image'
-          nullable: true
-        country:
-          type: string
-          example: US
-
-    Collection:
-      type: object
-      nullable: true
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        poster:
-          allOf:
-            - $ref: '#/components/schemas/Image'
-          nullable: true
-
-    MovieSummary:
-      type: object
-      description: Lightweight movie shape used in list/grid responses.
-      properties:
-        id:
-          type: integer
-          example: 550
+          description: TMDB movie ID.
+          example: 640146
         title:
           type: string
-          example: Fight Club
-        originalTitle:
+          description: Movie title (mapped from upstream `original_title`).
+          example: 'Ant-Man and the Wasp: Quantumania'
+        overview:
           type: string
-          example: Fight Club
-        synopsis:
+          description: Short plot synopsis.
+          example: 'Super-Hero partners Scott Lang and Hope van Dyne...'
+        poster_path:
           type: string
-          example: A ticking-time-bomb insomniac and a slippery soap salesman...
-        releaseDate:
+          nullable: true
+          description: Relative poster image path. Prepend `https://image.tmdb.org/t/p/w500` for a full URL.
+          example: '/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg'
+        release_date:
           type: string
           format: date
-          nullable: true
-          example: '1999-10-15'
-        releaseYear:
-          type: integer
-          nullable: true
-          example: 1999
-        poster:
-          allOf:
-            - $ref: '#/components/schemas/Image'
-          nullable: true
-        backdrop:
-          allOf:
-            - $ref: '#/components/schemas/Image'
-          nullable: true
-        rating:
-          $ref: '#/components/schemas/Rating'
-        popularity:
-          type: number
-          format: float
-          example: 61.4
-        originalLanguage:
+          description: Theatrical release date (ISO 8601).
+          example: '2023-02-15'
+        language:
           type: string
+          description: Original language code (mapped from upstream `original_language`).
           example: en
-        genreIds:
-          type: array
-          items:
-            type: integer
-          example: [18, 53]
-        adult:
-          type: boolean
-          example: false
+      required: [id, title, overview, poster_path, release_date, language]
 
-    MovieDetails:
-      allOf:
-        - $ref: '#/components/schemas/MovieSummary'
-        - type: object
-          description: Full movie shape used in the detail view.
-          properties:
-            tagline:
-              type: string
-              nullable: true
-              example: Mischief. Mayhem. Soap.
-            runtimeMinutes:
-              type: integer
-              nullable: true
-              example: 139
-            status:
-              type: string
-              example: Released
-            homepage:
-              type: string
-              format: uri
-              nullable: true
-            imdbId:
-              type: string
-              nullable: true
-              example: tt0137523
-            genres:
-              type: array
-              items:
-                $ref: '#/components/schemas/Genre'
-            spokenLanguages:
-              type: array
-              items:
-                $ref: '#/components/schemas/Language'
-            productionCompanies:
-              type: array
-              items:
-                $ref: '#/components/schemas/Company'
-            productionCountries:
-              type: array
-              items:
-                type: object
-                properties:
-                  code:
-                    type: string
-                    example: US
-                  name:
-                    type: string
-                    example: United States
-            budget:
-              type: integer
-              example: 63000000
-            revenue:
-              type: integer
-              example: 100853753
-            collection:
-              $ref: '#/components/schemas/Collection'
-
-    PaginatedMovies:
+    PopularMoviesResponse:
       type: object
-      description: Paginated envelope returned by search and popular endpoints.
+      description: Envelope returned by `GET /movies/popular`.
       properties:
+        language:
+          type: string
+          description: The BCP-47 language tag that was used for the upstream request.
+          example: en-US
         page:
           type: integer
+          description: Current page number.
           example: 1
-        totalPages:
-          type: integer
-          example: 42
-        totalResults:
-          type: integer
-          example: 836
         results:
           type: array
           items:
-            $ref: '#/components/schemas/MovieSummary'
+            $ref: '#/components/schemas/PopularMovieSummary'
+      required: [language, page, results]
