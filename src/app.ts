@@ -4,6 +4,9 @@ import fs from 'fs';
 import YAML from 'yaml';
 import { apiReference } from '@scalar/express-api-reference';
 import { moviesPopularRouter } from './routes/moviesPopular';
+import { tvPopularRouter } from './routes/tvPopular';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 
@@ -28,6 +31,7 @@ app.get('/health', (_request: Request, response: Response) => {
 
 // MARK: Routes
 app.use('/', moviesPopularRouter);
+app.use(tvPopularRouter);
 
 // 404 handler — must be after all routes
 app.use((_request: Request, response: Response) => {
