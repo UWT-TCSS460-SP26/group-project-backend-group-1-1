@@ -32,7 +32,7 @@ interface TmdbMovieDetails {
  * and returns a simplified version for our frontend.
  */
 router.get('/movies/:id', async (request: Request, response: Response) => {
-  const id = request.params.id;
+  const id = String(request.params.id);
 
   // Default language if not provided
   const language = (request.query.language as string) || 'en-US';

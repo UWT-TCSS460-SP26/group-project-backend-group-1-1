@@ -33,7 +33,7 @@ interface TmdbTVDetails {
  * Fetches detailed TV show information from TMDB
  */
 router.get('/tv/:id', async (request: Request, response: Response) => {
-  const id = request.params.id;
+  const id = String(request.params.id);
   const language = (request.query.language as string) || 'en-US';
 
   if (!id) {
