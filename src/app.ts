@@ -3,26 +3,39 @@ import cors from 'cors';
 import fs from 'fs';
 import YAML from 'yaml';
 import { apiReference } from '@scalar/express-api-reference';
-import { routes } from './routes';
-import { logger } from './middleware/logger';
+import { moviesPopularRouter } from './routes/moviesPopular';
+import { tvPopularRouter } from './routes/tvPopular';
+import { tvSearchRouter } from './routes/tvSearch';
+import { moviesSearchRouter } from './routes/moviesSearch';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 
 // Application-level middleware
 app.use(cors());
 app.use(express.json());
-app.use(logger);
 
 // OpenAPI documentation
-const specFile = fs.readFileSync('./openapi.yaml', 'utf8');
-const spec = YAML.parse(specFile);
+function loadSpec() {
+  const specFile = fs.readFileSync('./openapi.yaml', 'utf8');
+  return YAML.parse(specFile);
+}
 app.get('/openapi.json', (_request: Request, response: Response) => {
-  response.json(spec);
+  response.json(loadSpec());
 });
 app.use('/api-docs', apiReference({ spec: { url: '/openapi.json' } }));
 
-// Routes
-app.use(routes);
+// MARK: Health
+app.get('/health', (_request: Request, response: Response) => {
+  response.json({ message: 'GOOD' });
+});
+
+// MARK: Routes
+app.use('/', moviesPopularRouter);
+app.use(tvPopularRouter);
+app.use(tvSearchRouter);
+app.use(moviesSearchRouter);
 
 // 404 handler — must be after all routes
 app.use((_request: Request, response: Response) => {

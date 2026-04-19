@@ -1,584 +1,132 @@
 openapi: 3.0.3
 info:
-  title: TCSS 460 Backend Example API
+  title: TCSS 460 Group Project API
   description: |
-    Express + TypeScript example API for TCSS 460.
+    **Team:** OYaml
 
-    - **v1** routes demonstrate basic Express routing with no middleware.
-    - **v2** routes add validation middleware to the same controllers.
-    - **proxy** routes demonstrate the API proxy pattern (hiding API keys server-side).
-  version: 1.0.0
+    **Description:** A RESTful API for the TCSS 460 group project, providing health monitoring and core functionality.
+
+    **Deployed URL:** https://tcss460-team-1-api.onrender.com/health
+  version: 0.1.0
 
 servers:
-  - url: http://localhost:3000
-    description: Local development
+  - url: https://tcss460-team-1-api.onrender.com
+    description: Production
 
 tags:
-  - name: Hello (v1)
-    description: Basic HTTP method demos — no middleware
-  - name: Hello (v2)
-    description: Same handlers with route-level middleware
-  - name: Input (v1)
-    description: Receiving client input — no validation
-  - name: Input (v2)
-    description: Same handlers with validation middleware
-  - name: Proxy
-    description: |
-      OpenWeatherMap proxy — API key hidden server-side.
-      All proxy routes use middleware for validation (requireEnvVar, requireCity).
-      Includes both raw pass-through and transformed response endpoints.
+  - name: Health
+    description: Health check endpoints
+  - name: Movies
+    description: Movie search, popular, and detail endpoints
 
 paths:
-  # ── Hello Routes ──────────────────────────────────────────────
-
-  /v1/hello:
+  /health:
     get:
-      tags: [Hello (v1)]
-      summary: GET hello
-      description: Returns a hello message. Maps to CRUD **Read**.
+      tags: [Health]
+      summary: Health Check
+      description: Returns the health status of the API.
       responses:
         '200':
-          description: Success
+          description: API is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HelloResponse'
-    post:
-      tags: [Hello (v1)]
-      summary: POST hello
-      description: Returns a hello message. Maps to CRUD **Create**.
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-    put:
-      tags: [Hello (v1)]
-      summary: PUT hello
-      description: Returns a hello message. Maps to CRUD **Replace**.
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-    patch:
-      tags: [Hello (v1)]
-      summary: PATCH hello
-      description: Returns a hello message. Maps to CRUD **Update**.
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-    delete:
-      tags: [Hello (v1)]
-      summary: DELETE hello
-      description: Returns a hello message. Maps to CRUD **Delete**.
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'GOOD'
 
-  /v2/hello:
+  /movies/popular:
     get:
-      tags: [Hello (v2)]
-      summary: GET hello (with middleware)
-      description: Same handler as v1, with route-level logging middleware.
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-    post:
-      tags: [Hello (v2)]
-      summary: POST hello (with middleware)
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-    put:
-      tags: [Hello (v2)]
-      summary: PUT hello (with middleware)
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-    patch:
-      tags: [Hello (v2)]
-      summary: PATCH hello (with middleware)
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-    delete:
-      tags: [Hello (v2)]
-      summary: DELETE hello (with middleware)
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
+      tags: [Movies]
+      summary: Popular Movies
+      description: |
+        Proxies TMDB's `/discover/movie?sort_by=popularity.desc` endpoint and
+        returns a trimmed response envelope suitable for list/grid views.
 
-  # ── Input Routes ──────────────────────────────────────────────
-
-  /v1/input/search:
-    get:
-      tags: [Input (v1)]
-      summary: Search with query strings
-      description: Echoes back the `q` and `limit` query parameters.
+        Reference implementation for all TMDB proxy routes — see
+        `src/routes/moviesPopular.ts` for the pattern to copy when adding
+        new proxy endpoints.
       parameters:
-        - name: q
+        - name: language
           in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
           schema:
             type: string
-          description: Search term
-        - name: limit
+            default: en-US
+            example: en-US
+        - name: page
           in: query
-          schema:
-            type: integer
-          description: Max results
-      responses:
-        '200':
-          description: Echoed query params
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SearchResponse'
-
-  /v1/input/users/{id}:
-    get:
-      tags: [Input (v1)]
-      summary: Get user by route param
-      description: Echoes back the `:id` route parameter.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: User ID
-      responses:
-        '200':
-          description: Echoed route param
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserByIdResponse'
-
-  /v1/input/users:
-    post:
-      tags: [Input (v1)]
-      summary: Create user with JSON body
-      description: Echoes back `name` and `email` from the request body.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-      responses:
-        '201':
-          description: Echoed body
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateUserResponse'
-
-  /v1/input/headers:
-    get:
-      tags: [Input (v1)]
-      summary: Echo custom headers
-      description: Returns selected headers from the request.
-      parameters:
-        - name: x-request-id
-          in: header
-          schema:
-            type: string
-        - name: x-custom-header
-          in: header
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Echoed headers
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HeadersResponse'
-
-  /v2/input/search:
-    get:
-      tags: [Input (v2)]
-      summary: Search with validation
-      description: Same as v1 but validates that `q` is present. Returns 400 if missing.
-      parameters:
-        - name: q
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Search term (required in v2)
-        - name: limit
-          in: query
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Echoed query params
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SearchResponse'
-        '400':
-          description: Missing required query parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /v2/input/users/{id}:
-    get:
-      tags: [Input (v2)]
-      summary: Get user with ID validation
-      description: Same as v1 but validates that `id` is a positive integer.
-      parameters:
-        - name: id
-          in: path
-          required: true
+          required: false
+          description: 1-based page number.
           schema:
             type: integer
             minimum: 1
-          description: User ID (must be positive integer in v2)
+            default: 1
       responses:
         '200':
-          description: Echoed route param
+          description: Paginated list of popular movies (trimmed schema).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserByIdResponse'
-        '400':
-          description: Invalid ID format
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /v2/input/users:
-    post:
-      tags: [Input (v2)]
-      summary: Create user with body validation
-      description: Same as v1 but validates that `name` and `email` are present strings.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-      responses:
-        '201':
-          description: User created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateUserResponse'
-        '400':
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-
-  /v2/input/headers:
-    get:
-      tags: [Input (v2)]
-      summary: Echo custom headers (no additional validation)
-      parameters:
-        - name: x-request-id
-          in: header
-          schema:
-            type: string
-        - name: x-custom-header
-          in: header
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Echoed headers
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HeadersResponse'
-
-  # ── Proxy Routes ──────────────────────────────────────────────
-
-  /proxy/weather:
-    get:
-      tags: [Proxy]
-      summary: Current weather — raw pass-through
-      description: |
-        Proxies OpenWeatherMap current weather. API key is hidden server-side.
-        Returns the full, unmodified OpenWeatherMap response.
-        Validation (city required, API key required) is handled by middleware.
-      parameters:
-        - name: city
-          in: query
-          required: true
-          schema:
-            type: string
-          description: City name (e.g., Seattle)
-      responses:
-        '200':
-          description: Full weather data from OpenWeatherMap
-        '400':
-          description: Missing city parameter (middleware)
+                $ref: '#/components/schemas/PopularMoviesResponse'
         '500':
-          description: WEATHER_API_KEY not configured (middleware)
+          description: TMDB API key not configured on the server.
         '502':
-          description: Failed to reach weather service
-
-  /proxy/weather/{city}:
-    get:
-      tags: [Proxy]
-      summary: Current weather by route param — raw pass-through
-      description: Same as query version but city is a route parameter.
-      parameters:
-        - name: city
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Full weather data from OpenWeatherMap
-        '400':
-          description: Missing city parameter (middleware)
-        '500':
-          description: WEATHER_API_KEY not configured (middleware)
-        '502':
-          description: Failed to reach weather service
-
-  /proxy/summary:
-    get:
-      tags: [Proxy]
-      summary: Weather summary — transformed response
-      description: |
-        Fetches from OpenWeatherMap but reshapes the response into a simplified
-        summary. Demonstrates that a proxy can add value by curating the data
-        rather than being a raw pass-through.
-      parameters:
-        - name: city
-          in: query
-          required: true
-          schema:
-            type: string
-          description: City name (e.g., Seattle)
-      responses:
-        '200':
-          description: Simplified weather summary
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WeatherSummary'
-        '400':
-          description: Missing city parameter (middleware)
-        '500':
-          description: WEATHER_API_KEY not configured (middleware)
-        '502':
-          description: Failed to reach weather service
-
-  /proxy/summary/{city}:
-    get:
-      tags: [Proxy]
-      summary: Weather summary by route param — transformed response
-      description: Same as query version but city is a route parameter.
-      parameters:
-        - name: city
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Simplified weather summary
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WeatherSummary'
-        '400':
-          description: Missing city parameter (middleware)
-        '500':
-          description: WEATHER_API_KEY not configured (middleware)
-        '502':
-          description: Failed to reach weather service
-
-  /proxy/forecast:
-    get:
-      tags: [Proxy]
-      summary: 5-day forecast — raw pass-through
-      description: Proxies OpenWeatherMap 5-day forecast. Returns full response.
-      parameters:
-        - name: city
-          in: query
-          required: true
-          schema:
-            type: string
-          description: City name
-      responses:
-        '200':
-          description: Forecast data from OpenWeatherMap
-        '400':
-          description: Missing city parameter (middleware)
-        '500':
-          description: WEATHER_API_KEY not configured (middleware)
-        '502':
-          description: Failed to reach weather service
-
-# ── Schemas ───────────────────────────────────────────────────
+          description: Upstream TMDB unreachable or returned an invalid body.
 
 components:
   schemas:
-    HelloResponse:
+    PopularMovieSummary:
       type: object
+      description: |
+        Trimmed movie shape returned by `GET /movies/popular`.
+        Maps upstream TMDB field names to our public names.
       properties:
-        message:
+        id:
+          type: integer
+          description: TMDB movie ID.
+          example: 640146
+        title:
           type: string
-          example: 'Hello, you sent a GET request'
+          description: Movie title (mapped from upstream `original_title`).
+          example: 'Ant-Man and the Wasp: Quantumania'
+        overview:
+          type: string
+          description: Short plot synopsis.
+          example: 'Super-Hero partners Scott Lang and Hope van Dyne...'
+        poster_path:
+          type: string
+          nullable: true
+          description: Relative poster image path. Prepend `https://image.tmdb.org/t/p/w500` for a full URL.
+          example: '/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg'
+        release_date:
+          type: string
+          format: date
+          description: Theatrical release date (ISO 8601).
+          example: '2023-02-15'
+        language:
+          type: string
+          description: Original language code (mapped from upstream `original_language`).
+          example: en
+      required: [id, title, overview, poster_path, release_date, language]
 
-    SearchResponse:
+    PopularMoviesResponse:
       type: object
+      description: Envelope returned by `GET /movies/popular`.
       properties:
-        message:
+        language:
           type: string
-        query:
-          type: object
-          properties:
-            q:
-              type: string
-              nullable: true
-            limit:
-              type: string
-              nullable: true
-
-    UserByIdResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        params:
-          type: object
-          properties:
-            id:
-              type: string
-
-    CreateUserRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          example: Jane Doe
-        email:
-          type: string
-          example: jane@example.com
-
-    CreateUserResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        body:
-          type: object
-          properties:
-            name:
-              type: string
-            email:
-              type: string
-
-    HeadersResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        headers:
-          type: object
-          properties:
-            x-request-id:
-              type: string
-              nullable: true
-            x-custom-header:
-              type: string
-              nullable: true
-            content-type:
-              type: string
-              nullable: true
-
-    WeatherSummary:
-      type: object
-      properties:
-        city:
-          type: string
-          example: Seattle
-        country:
-          type: string
-          example: US
-        temperature:
-          type: object
-          properties:
-            current:
-              type: number
-              example: 12
-            feelsLike:
-              type: number
-              example: 10
-            min:
-              type: number
-              example: 9
-            max:
-              type: number
-              example: 14
-        conditions:
-          type: string
-          example: light rain
-        humidity:
-          type: number
-          example: 72
-        windSpeed:
-          type: number
-          example: 5.2
-
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-
-    ValidationErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-        details:
+          description: The BCP-47 language tag that was used for the upstream request.
+          example: en-US
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        results:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/PopularMovieSummary'
+      required: [language, page, results]
