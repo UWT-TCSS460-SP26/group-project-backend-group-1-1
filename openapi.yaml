@@ -19,7 +19,7 @@ tags:
   - name: Movies
     description: Movie search, popular, and detail endpoints
   - name: TV
-    description: TV show search, popular, and detail endpoints 
+    description: TV show search, popular, and detail endpoints
 
 paths:
   /health:
@@ -117,6 +117,51 @@ paths:
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
 
+  /movies/search:
+    get:
+      tags: [Movies]
+      summary: Movie Search
+      description: |
+        Searches TMDB movies by query and returns a simplified search result
+        envelope with only the fields needed by the frontend.
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Text query to search movie titles.
+          schema:
+            type: string
+            example: batman
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Search results for movies.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieSearchResponse'
+        '400':
+          description: Query parameter is required.
+        '500':
+          description: TMDB API key not configured on the server.
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
+
   /tv/{id}:
     get:
       tags: [TV]
@@ -151,6 +196,51 @@ paths:
                 $ref: '#/components/schemas/TvDetailsResponse'
         '400':
           description: TV show ID is missing or invalid.
+        '500':
+          description: TMDB API key not configured on the server.
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
+
+  /tv/search:
+    get:
+      tags: [TV]
+      summary: TV Show Search
+      description: |
+        Searches TMDB TV shows by query and returns a simplified search result
+        envelope with only the fields needed by the frontend.
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Text query to search TV show names.
+          schema:
+            type: string
+            example: game of thrones
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Search results for TV shows.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TvSearchResponse'
+        '400':
+          description: Query parameter is required.
         '500':
           description: TMDB API key not configured on the server.
         '502':
@@ -209,7 +299,102 @@ components:
           items:
             $ref: '#/components/schemas/PopularMovieSummary'
       required: [language, page, results]
-        MovieDetailsResponse:
+
+    MovieSearchResult:
+      type: object
+      description: Summary movie shape returned by `GET /movies/search`.
+      properties:
+        id:
+          type: integer
+          example: 550
+        title:
+          type: string
+          example: 'Fight Club'
+        overview:
+          type: string
+          example: 'An insomniac office worker and a devil-may-care soap maker...'
+        poster_path:
+          type: string
+          nullable: true
+          example: '/i8M6qh39uJVvP9w5ub-h0qMjFk5.jpg'
+        release_date:
+          type: string
+          format: date
+          example: '1999-10-15'
+        language:
+          type: string
+          example: en
+      required: [id, title, overview, poster_path, release_date, language]
+
+    MovieSearchResponse:
+      type: object
+      description: Envelope returned by `GET /movies/search`.
+      properties:
+        query:
+          type: string
+          example: fight
+        language:
+          type: string
+          example: en-US
+        page:
+          type: integer
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieSearchResult'
+      required: [query, language, page, results]
+
+    TvSearchResult:
+      type: object
+      description: Summary TV show shape returned by `GET /tv/search`.
+      properties:
+        id:
+          type: integer
+          example: 1399
+        title:
+          type: string
+          example: 'Game of Thrones'
+        overview:
+          type: string
+          example: 'Seven noble families fight for control of the mythical land of Westeros.'
+        posterPath:
+          type: string
+          nullable: true
+          example: '/tv-poster.jpg'
+        firstAirDate:
+          type: string
+          format: date
+          example: '2011-04-17'
+        year:
+          type: integer
+          nullable: true
+          example: 2011
+        originalLanguage:
+          type: string
+          example: en
+      required: [id, title, overview, posterPath, firstAirDate, year, originalLanguage]
+
+    TvSearchResponse:
+      type: object
+      description: Envelope returned by `GET /tv/search`.
+      properties:
+        query:
+          type: string
+          example: throne
+        language:
+          type: string
+          example: en-US
+        page:
+          type: integer
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TvSearchResult'
+      required: [query, language, page, results]
+
+    MovieDetailsResponse:
       type: object
       description: Detailed movie information returned by `GET /movies/{id}`.
       properties:
