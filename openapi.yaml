@@ -18,6 +18,8 @@ tags:
     description: Health check endpoints
   - name: Movies
     description: Movie search, popular, and detail endpoints
+  - name: TV
+    description: TV show search, popular, and detail endpoints 
 
 paths:
   /health:
@@ -76,6 +78,83 @@ paths:
           description: TMDB API key not configured on the server.
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
+  /movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Movie Details
+      description: |
+        Retrieves detailed information for a specific movie by ID.
+
+        This endpoint proxies TMDB's movie details endpoint and returns a
+        simplified response shape for the frontend.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TMDB movie ID.
+          schema:
+            type: integer
+            example: 550
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+      responses:
+        '200':
+          description: Detailed movie information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetailsResponse'
+        '400':
+          description: Movie ID is missing or invalid.
+        '500':
+          description: TMDB API key not configured on the server.
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
+
+  /tv/{id}:
+    get:
+      tags: [TV]
+      summary: TV Show Details
+      description: |
+        Retrieves detailed information for a specific TV show by ID.
+
+        This endpoint proxies TMDB's TV details endpoint and returns a
+        simplified response shape for the frontend.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TMDB TV show ID.
+          schema:
+            type: integer
+            example: 1399
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+      responses:
+        '200':
+          description: Detailed TV show information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TvDetailsResponse'
+        '400':
+          description: TV show ID is missing or invalid.
+        '500':
+          description: TMDB API key not configured on the server.
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
 
 components:
   schemas:
@@ -130,3 +209,118 @@ components:
           items:
             $ref: '#/components/schemas/PopularMovieSummary'
       required: [language, page, results]
+        MovieDetailsResponse:
+      type: object
+      description: Detailed movie information returned by `GET /movies/{id}`.
+      properties:
+        id:
+          type: integer
+          example: 550
+        title:
+          type: string
+          example: 'Fight Club'
+        overview:
+          type: string
+          example: 'A ticking-time-bomb insomniac and a slippery soap salesman...'
+        poster_path:
+          type: string
+          nullable: true
+          example: '/jSziioSwPVrOy9Yow3XhWIBDjq1.jpg'
+        backdrop_path:
+          type: string
+          nullable: true
+          example: '/c6OLXfKAk5BKeR6broC8pYiCquX.jpg'
+        release_date:
+          type: string
+          format: date
+          example: '1999-10-15'
+        language:
+          type: string
+          example: en
+        rating:
+          type: number
+          format: float
+          example: 8.4
+        runtime:
+          type: integer
+          example: 139
+        genres:
+          type: array
+          items:
+            type: string
+          example: ['Drama', 'Thriller']
+      required:
+        [
+          id,
+          title,
+          overview,
+          poster_path,
+          backdrop_path,
+          release_date,
+          language,
+          rating,
+          runtime,
+          genres,
+        ]
+
+    TvDetailsResponse:
+      type: object
+      description: Detailed TV show information returned by `GET /tv/{id}`.
+      properties:
+        id:
+          type: integer
+          example: 1399
+        title:
+          type: string
+          example: 'Game of Thrones'
+        overview:
+          type: string
+          example: 'Seven noble families fight for control of the mythical land of Westeros.'
+        poster_path:
+          type: string
+          nullable: true
+          example: '/tv-poster.jpg'
+        backdrop_path:
+          type: string
+          nullable: true
+          example: '/tv-backdrop.jpg'
+        first_air_date:
+          type: string
+          format: date
+          example: '2011-04-17'
+        language:
+          type: string
+          example: en
+        rating:
+          type: number
+          format: float
+          example: 8.5
+        number_of_seasons:
+          type: integer
+          example: 8
+        number_of_episodes:
+          type: integer
+          example: 73
+        status:
+          type: string
+          example: 'Ended'
+        genres:
+          type: array
+          items:
+            type: string
+          example: ['Sci-Fi & Fantasy']
+      required:
+        [
+          id,
+          title,
+          overview,
+          poster_path,
+          backdrop_path,
+          first_air_date,
+          language,
+          rating,
+          number_of_seasons,
+          number_of_episodes,
+          status,
+          genres,
+        ]
