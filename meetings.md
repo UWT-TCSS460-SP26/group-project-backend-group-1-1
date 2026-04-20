@@ -141,3 +141,11 @@
 - Harleen: N/A
 - Jonathan: N/A
 - Nathaniel: N/A
+
+### Sprint 1:
+The team discussed meeting on Monday to reset, review progress, and improve overall coordination.
+Identified the need for clearer roles so everyone knows what they are responsible for and work is shared fairly.
+Reviewed current progress on Sprint 1 tasks and identified remaining work.
+Discussed ensuring all endpoints, tests, and documentation are completed before the deadline.
+Agreed to communicate updates more consistently in the group chat to avoid confusion.
+Planned to check in regularly leading up to the deadline to ensure everything is completed on time.
