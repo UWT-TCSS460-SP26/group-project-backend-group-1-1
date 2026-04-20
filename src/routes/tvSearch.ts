@@ -53,14 +53,17 @@ router.get('/tv/search', async (request: Request, response: Response) => {
 
     const data = (await upstream.json()) as TmdbResponse;
 
-    const shows = data.results.map((show) => ({
-      id: show.id,
-      title: show.name,
-      overview: show.overview,
-      poster_path: show.poster_path,
-      first_air_date: show.first_air_date,
-      language: show.original_language,
-    }));
+   const shows = data.results.map((show) => ({
+  id: show.id,
+  title: show.name,
+  overview: show.overview,
+  posterPath: show.poster_path,
+  firstAirDate: show.first_air_date,
+  year: show.first_air_date
+    ? Number(show.first_air_date.split('-')[0])
+    : null,
+  originalLanguage: show.original_language,
+}));
 
     return response.json({
       query,
