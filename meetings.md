@@ -1,4 +1,4 @@
-# Meeting Minutes
+Meeting Minutes: 95min
 
 ## Sprint 1 — TMDB Proxy Planning
 
