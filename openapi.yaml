@@ -2,11 +2,11 @@ openapi: 3.0.3
 info:
   title: TCSS 460 Group Project API
   description: |
-    **Team:** OYaml
+    **Team:** Nate, Harleen, Harsimar, Jonathan
 
-    **Description:** A RESTful API for the TCSS 460 group project, providing health monitoring and core functionality.
+    **Description:** A RESTful API for the TCSS 460 group project, proxying TMDB data for movies and TV shows through team-designed endpoints.
 
-    **Deployed URL:** https://tcss460-team-1-api.onrender.com/health
+    **Deployed URL:** https://tcss460-team-1-api.onrender.com
   version: 0.1.0
 
 servers:
@@ -157,6 +157,42 @@ paths:
                 $ref: '#/components/schemas/MovieSearchResponse'
         '400':
           description: Query parameter is required.
+        '500':
+          description: TMDB API key not configured on the server.
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
+
+  /tv/popular:
+    get:
+      tags: [TV]
+      summary: Popular TV Shows
+      description: |
+        Proxies TMDB's `/discover/tv?sort_by=popularity.desc` endpoint and
+        returns a trimmed response envelope suitable for list/grid views.
+      parameters:
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Paginated list of popular TV shows.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PopularTvResponse'
         '500':
           description: TMDB API key not configured on the server.
         '502':
@@ -344,6 +380,52 @@ components:
           items:
             $ref: '#/components/schemas/MovieSearchResult'
       required: [query, language, page, results]
+
+    PopularTvSummary:
+      type: object
+      description: Trimmed TV show shape returned by `GET /tv/popular`.
+      properties:
+        id:
+          type: integer
+          example: 1399
+        title:
+          type: string
+          description: TV show name (mapped from upstream `original_name`).
+          example: 'Game of Thrones'
+        overview:
+          type: string
+          example: 'Seven noble families fight for control of the lands of Westeros...'
+        poster_path:
+          type: string
+          nullable: true
+          description: Relative poster image path. Prepend `https://image.tmdb.org/t/p/w500` for a full URL.
+          example: '/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg'
+        first_air_date:
+          type: string
+          format: date
+          example: '2011-04-17'
+        language:
+          type: string
+          description: Original language code (mapped from upstream `original_language`).
+          example: en
+      required: [id, title, overview, poster_path, first_air_date, language]
+
+    PopularTvResponse:
+      type: object
+      description: Envelope returned by `GET /tv/popular`.
+      properties:
+        language:
+          type: string
+          description: The BCP-47 language tag used for the upstream request.
+          example: en-US
+        page:
+          type: integer
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PopularTvSummary'
+      required: [language, page, results]
 
     TvSearchResult:
       type: object
