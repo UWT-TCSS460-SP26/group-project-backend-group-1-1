@@ -145,6 +145,7 @@ Meeting Minutes: 95min
 - Nathaniel: N/A
 
 ### Sprint 1:
+
 The team discussed meeting on Monday to reset, review progress, and improve overall coordination.
 Identified the need for clearer roles so everyone knows what they are responsible for and work is shared fairly.
 Reviewed current progress on Sprint 1 tasks and identified remaining work.

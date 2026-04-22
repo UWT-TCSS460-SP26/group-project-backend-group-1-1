@@ -12,6 +12,8 @@ info:
 servers:
   - url: https://tcss460-team-1-api.onrender.com
     description: Production
+  - url: http://localhost:3000
+    description: Local development
 
 tags:
   - name: Health
@@ -44,12 +46,8 @@ paths:
       tags: [Movies]
       summary: Popular Movies
       description: |
-        Proxies TMDB's `/discover/movie?sort_by=popularity.desc` endpoint and
-        returns a trimmed response envelope suitable for list/grid views.
-
-        Reference implementation for all TMDB proxy routes — see
-        `src/routes/moviesPopular.ts` for the pattern to copy when adding
-        new proxy endpoints.
+        Returns the most popular movies, sorted by popularity descending.
+        Proxies TMDB's `/discover/movie` endpoint.
       parameters:
         - name: language
           in: query
@@ -69,66 +67,36 @@ paths:
             default: 1
       responses:
         '200':
-          description: Paginated list of popular movies (trimmed schema).
+          description: Paginated list of popular movies.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PopularMoviesResponse'
         '500':
           description: TMDB API key not configured on the server.
-        '502':
-          description: Upstream TMDB unreachable or returned an invalid body.
-  /movies/{id}:
-    get:
-      tags: [Movies]
-      summary: Movie Details
-      description: |
-        Retrieves detailed information for a specific movie by ID.
-
-        This endpoint proxies TMDB's movie details endpoint and returns a
-        simplified response shape for the frontend.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: TMDB movie ID.
-          schema:
-            type: integer
-            example: 550
-        - name: language
-          in: query
-          required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
-          schema:
-            type: string
-            default: en-US
-            example: en-US
-      responses:
-        '200':
-          description: Detailed movie information.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MovieDetailsResponse'
-        '400':
-          description: Movie ID is missing or invalid.
-        '500':
-          description: TMDB API key not configured on the server.
+                $ref: '#/components/schemas/ErrorResponse'
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /movies/search:
     get:
       tags: [Movies]
-      summary: Movie Search
+      summary: Search Movies
       description: |
-        Searches TMDB movies by query and returns a simplified search result
-        envelope with only the fields needed by the frontend.
+        Searches for movies by title. Requires the `query` parameter.
+        Proxies TMDB's `/search/movie` endpoint.
       parameters:
         - name: query
           in: query
           required: true
-          description: Text query to search movie titles.
+          description: Title to search for.
           schema:
             type: string
             example: batman
@@ -156,19 +124,86 @@ paths:
               schema:
                 $ref: '#/components/schemas/MovieSearchResponse'
         '400':
-          description: Query parameter is required.
+          description: Query parameter is missing or empty.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: TMDB API key not configured on the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Movie Details
+      description: |
+        Returns detailed information for a specific movie by TMDB ID.
+        Proxies TMDB's `/movie/{id}` endpoint.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TMDB movie ID.
+          schema:
+            type: integer
+            example: 550
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+      responses:
+        '200':
+          description: Detailed movie information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetailsResponse'
+        '400':
+          description: Movie ID is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: TMDB API key not configured on the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /tv/popular:
     get:
       tags: [TV]
       summary: Popular TV Shows
       description: |
-        Proxies TMDB's `/discover/tv?sort_by=popularity.desc` endpoint and
-        returns a trimmed response envelope suitable for list/grid views.
+        Returns the most popular TV shows, sorted by popularity descending.
+        Proxies TMDB's `/discover/tv` endpoint.
       parameters:
         - name: language
           in: query
@@ -195,60 +230,29 @@ paths:
                 $ref: '#/components/schemas/PopularTvResponse'
         '500':
           description: TMDB API key not configured on the server.
-        '502':
-          description: Upstream TMDB unreachable or returned an invalid body.
-
-  /tv/{id}:
-    get:
-      tags: [TV]
-      summary: TV Show Details
-      description: |
-        Retrieves detailed information for a specific TV show by ID.
-
-        This endpoint proxies TMDB's TV details endpoint and returns a
-        simplified response shape for the frontend.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: TMDB TV show ID.
-          schema:
-            type: integer
-            example: 1399
-        - name: language
-          in: query
-          required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
-          schema:
-            type: string
-            default: en-US
-            example: en-US
-      responses:
-        '200':
-          description: Detailed TV show information.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TvDetailsResponse'
-        '400':
-          description: TV show ID is missing or invalid.
-        '500':
-          description: TMDB API key not configured on the server.
+                $ref: '#/components/schemas/ErrorResponse'
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /tv/search:
     get:
       tags: [TV]
-      summary: TV Show Search
+      summary: Search TV Shows
       description: |
-        Searches TMDB TV shows by query and returns a simplified search result
-        envelope with only the fields needed by the frontend.
+        Searches for TV shows by title. Requires the `query` parameter.
+        Proxies TMDB's `/search/tv` endpoint.
       parameters:
         - name: query
           in: query
           required: true
-          description: Text query to search TV show names.
+          description: Title to search for.
           schema:
             type: string
             example: game of thrones
@@ -276,14 +280,91 @@ paths:
               schema:
                 $ref: '#/components/schemas/TvSearchResponse'
         '400':
-          description: Query parameter is required.
+          description: Query parameter is missing or empty.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: TMDB API key not configured on the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tv/{id}:
+    get:
+      tags: [TV]
+      summary: TV Show Details
+      description: |
+        Returns detailed information for a specific TV show by TMDB ID.
+        Proxies TMDB's `/tv/{id}` endpoint.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TMDB TV show ID.
+          schema:
+            type: integer
+            example: 1399
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+      responses:
+        '200':
+          description: Detailed TV show information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TvDetailsResponse'
+        '400':
+          description: TV show ID is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: TV show not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: TMDB API key not configured on the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Upstream TMDB unreachable or returned an invalid body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      description: Standard error envelope returned on 4xx and 5xx responses.
+      properties:
+        message:
+          type: string
+          description: Human-readable description of the error.
+          example: 'Missing required query parameter: query'
+      required: [message]
+
     PopularMovieSummary:
       type: object
       description: |
