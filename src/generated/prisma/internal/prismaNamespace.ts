@@ -376,6 +376,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
+  Rating: 'Rating',
+  Review: 'Review',
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -395,7 +397,7 @@ export type TypeMap<
     omit: GlobalOmitOptions;
   };
   meta: {
-    modelProps: 'user';
+    modelProps: 'user' | 'rating' | 'review';
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
@@ -473,6 +475,154 @@ export type TypeMap<
         };
       };
     };
+    Rating: {
+      payload: Prisma.$RatingPayload<ExtArgs>;
+      fields: Prisma.RatingFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.RatingFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.RatingFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>;
+        };
+        findFirst: {
+          args: Prisma.RatingFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.RatingFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>;
+        };
+        findMany: {
+          args: Prisma.RatingFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>[];
+        };
+        create: {
+          args: Prisma.RatingCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>;
+        };
+        createMany: {
+          args: Prisma.RatingCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.RatingCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>[];
+        };
+        delete: {
+          args: Prisma.RatingDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>;
+        };
+        update: {
+          args: Prisma.RatingUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>;
+        };
+        deleteMany: {
+          args: Prisma.RatingDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.RatingUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.RatingUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>[];
+        };
+        upsert: {
+          args: Prisma.RatingUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RatingPayload>;
+        };
+        aggregate: {
+          args: Prisma.RatingAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRating>;
+        };
+        groupBy: {
+          args: Prisma.RatingGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.RatingGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.RatingCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.RatingCountAggregateOutputType> | number;
+        };
+      };
+    };
+    Review: {
+      payload: Prisma.$ReviewPayload<ExtArgs>;
+      fields: Prisma.ReviewFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ReviewFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ReviewFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>;
+        };
+        findFirst: {
+          args: Prisma.ReviewFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ReviewFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>;
+        };
+        findMany: {
+          args: Prisma.ReviewFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>[];
+        };
+        create: {
+          args: Prisma.ReviewCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>;
+        };
+        createMany: {
+          args: Prisma.ReviewCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ReviewCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>[];
+        };
+        delete: {
+          args: Prisma.ReviewDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>;
+        };
+        update: {
+          args: Prisma.ReviewUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ReviewDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ReviewUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ReviewUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>[];
+        };
+        upsert: {
+          args: Prisma.ReviewUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewPayload>;
+        };
+        aggregate: {
+          args: Prisma.ReviewAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReview>;
+        };
+        groupBy: {
+          args: Prisma.ReviewGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ReviewGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ReviewCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ReviewCountAggregateOutputType> | number;
+        };
+      };
+    };
   };
 } & {
   other: {
@@ -524,6 +674,33 @@ export const UserScalarFieldEnum = {
 } as const;
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+
+export const RatingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  score: 'score',
+  tmdbId: 'tmdbId',
+  mediaType: 'mediaType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type RatingScalarFieldEnum =
+  (typeof RatingScalarFieldEnum)[keyof typeof RatingScalarFieldEnum];
+
+export const ReviewScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  description: 'description',
+  tmdbId: 'tmdbId',
+  mediaType: 'mediaType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ReviewScalarFieldEnum =
+  (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum];
 
 export const SortOrder = {
   asc: 'asc',
@@ -709,6 +886,8 @@ export type PrismaClientOptions = (
 };
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit;
+  rating?: Prisma.RatingOmit;
+  review?: Prisma.ReviewOmit;
 };
 
 /* Types for Logging */
