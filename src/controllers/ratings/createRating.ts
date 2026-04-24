@@ -1,22 +1,20 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
-/**
- * POST /ratings
- * Authenticated. Creates a rating owned by req.user.
- *
- * Body: { tmdbId: number, mediaType: 'movie' | 'tv', score: number }
- * Response: 201 with the created rating.
- *
- * TODO:
- *   - validate body (tmdbId int, mediaType in enum, score in range)
- *   - prisma.rating.create with userId = req.user.sub
- *   - decide re-rate behavior (upsert vs error) per team decision
- */
+interface AuthenticatedRequest extends Request {
+  user?: {
+    sub: string;
+    email: string;
+    role: string;
+  };
+}
 
-export const createRating = async (request: Request, response: Response): Promise<void> => {
+export const createRating = async (
+  request: AuthenticatedRequest,
+  response: Response
+): Promise<void> => {
   const { tmdbId, mediaType, score } = request.body;
-  const user = (request as any).user;
+  const user = request.user;
 
   if (!user?.sub) {
     response.status(401).json({ error: 'Unauthorized' });
