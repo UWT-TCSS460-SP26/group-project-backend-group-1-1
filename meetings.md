@@ -1,3 +1,5 @@
+Meeting Minutes: 95min
+
 ### Agenda Item 1:
 
 **Meeting Manager:** Nathaniel
@@ -49,7 +51,7 @@
 **RESPONSES**
 
 - Hasimar: I like anime, video games, and recently picked up clay as a new hobby.
-- Harleen: I love turning random ideas into actual projects, and outside of coding I’m really into fitness and trying new things.
+- Harleen: I love turning random ideas into actual projects, and outside of coding I'm really into fitness and trying new things.
 - Jonathan: I am a CS mentor here at UWT. You will most often find me at the Dougan 110 computer lab Monday through Thursday.
 - Nathaniel: I like Tea, I like watching CPPCON on youtube to learn about new things. I like watching the NBA – my favorite team is the 2014 Spurs.
 
@@ -105,7 +107,7 @@
 **RESPONSES**
 
 - Hasimar: I have some knowledge and experience with Git and GitHub and am comfortable helping out when needed.
-- Harleen: Little experience with Git and GitHub (branching, pushing, resolving basic issues) and interested in becoming the group’s Git SME and improving further.
+- Harleen: Little experience with Git and GitHub (branching, pushing, resolving basic issues) and interested in becoming the group's Git SME and improving further.
 - Jonathan: I have git experience. I can take over after Sprint 1 for git SME if no one else wants to.
 - Nathaniel: Temp for SPRINT 0.
 
@@ -116,7 +118,7 @@
 **RESPONSES**
 
 - Hasimar: No concerns, but I think having regular meetings will help us collaborate better. Focusing on starting tasks early would be good so we have time to handle issues.
-- Harleen: I want to make sure everyone contributes equally and we avoid last-minute stress, since I’ve had past group experiences where work wasn’t balanced. I’m hoping to improve collaboration skills and build a strong project by using clear roles, regular check-ins, and proper Git workflow.
+- Harleen: I want to make sure everyone contributes equally and we avoid last-minute stress, since I've had past group experiences where work wasn't balanced. I'm hoping to improve collaboration skills and build a strong project by using clear roles, regular check-ins, and proper Git workflow.
 - Jonathan: I've had no bad group-project experiences. I just want some experience in this domain (full-stack project). We should communicate early in the week for these sprints.
 - Nathaniel: N/A, I'd like time for pair programming and meetings. Keeping in contact through sprints is important.
 
@@ -143,6 +145,7 @@
 - Nathaniel: N/A
 
 ### Sprint 1:
+
 The team discussed meeting on Monday to reset, review progress, and improve overall coordination.
 Identified the need for clearer roles so everyone knows what they are responsible for and work is shared fairly.
 Reviewed current progress on Sprint 1 tasks and identified remaining work.
