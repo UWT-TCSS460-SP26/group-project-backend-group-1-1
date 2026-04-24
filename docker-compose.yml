@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tcss460-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tcss460
+      POSTGRES_PASSWORD: tcss460dev
+      POSTGRES_DB: tcss460
+    ports:
+      - '5432:5432'
+    volumes:
+      - tcss460-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tcss460 -d tcss460']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tcss460-pgdata:

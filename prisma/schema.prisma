@@ -21,4 +21,37 @@ model User {
   role      String   @default("user")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  ratings   Rating[]
+  reviews   Review[]
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int
+  tmdbId    String
+  mediaType String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, tmdbId, mediaType])
+  @@index([userId])
+  @@index([tmdbId, mediaType])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  description String
+  tmdbId    String
+  mediaType String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, tmdbId, mediaType])
+  @@index([userId])
+  @@index([tmdbId, mediaType])
 }
