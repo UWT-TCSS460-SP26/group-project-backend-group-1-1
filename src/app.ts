@@ -11,6 +11,8 @@ import dotenv from 'dotenv';
 import { movieIDRouter } from './routes/movieID';
 import { tvIDRouter } from './routes/tvID';
 import devAuthRouter from './routes/devAuth';
+import { ratingsRouter } from './routes/ratings';
+import { reviewsRouter } from './routes/reviews';
 dotenv.config();
 
 const app = express();
@@ -42,6 +44,9 @@ app.use(moviesSearchRouter);
 app.use(movieIDRouter);
 app.use(tvIDRouter);
 app.use('/auth', devAuthRouter);
+app.use('/ratings', ratingsRouter);
+app.use('/reviews', reviewsRouter);
+
 // 404 handler — must be after all routes
 app.use((_request: Request, response: Response) => {
   response.status(404).json({ error: 'Route not found' });
