@@ -21,13 +21,3 @@ export * from './enums';
  *
  */
 export type User = Prisma.UserModel;
-/**
- * Model Rating
- *
- */
-export type Rating = Prisma.RatingModel;
-/**
- * Model Review
- *
- */
-export type Review = Prisma.ReviewModel;
