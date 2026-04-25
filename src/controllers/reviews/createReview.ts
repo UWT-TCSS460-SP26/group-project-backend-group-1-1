@@ -49,7 +49,7 @@ export const createReview = async (request: Request, response: Response): Promis
     });
 
     response.status(201).json(review);
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       response.status(409).json({ error: 'You have already reviewed this media item' });
     } else {
