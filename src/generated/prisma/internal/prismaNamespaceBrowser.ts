@@ -49,8 +49,6 @@ export const AnyNull = runtime.AnyNull;
 
 export const ModelName = {
   User: 'User',
-  Rating: 'Rating',
-  Review: 'Review',
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -81,33 +79,6 @@ export const UserScalarFieldEnum = {
 } as const;
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
-
-export const RatingScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  score: 'score',
-  tmdbId: 'tmdbId',
-  mediaType: 'mediaType',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type RatingScalarFieldEnum =
-  (typeof RatingScalarFieldEnum)[keyof typeof RatingScalarFieldEnum];
-
-export const ReviewScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  title: 'title',
-  description: 'description',
-  tmdbId: 'tmdbId',
-  mediaType: 'mediaType',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ReviewScalarFieldEnum =
-  (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum];
 
 export const SortOrder = {
   asc: 'asc',
