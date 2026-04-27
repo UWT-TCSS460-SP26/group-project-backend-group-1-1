@@ -2,6 +2,8 @@ import request from 'supertest';
 import { app } from '../../src/app';
 import { prisma } from '../../src/lib/prisma';
 
+process.env.JWT_SECRET = 'test-secret';
+
 jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     review: {
@@ -11,6 +13,10 @@ jest.mock('../../src/lib/prisma', () => ({
 }));
 
 describe('GET /reviews/media/:mediaType/:tmdbId', () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = 'test-secret';
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });

@@ -1,7 +1,9 @@
 import request from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../src/app';
-import { prisma } from '../src/lib/prisma';
+import { app } from '../../src/app';
+import { prisma } from '../../src/lib/prisma';
+import { generateTestToken } from '../testHelpers';
+
+process.env.JWT_SECRET = 'test-secret';
 
 const EXISTING_RATING = {
   id: 1,
@@ -11,7 +13,7 @@ const EXISTING_RATING = {
   mediaType: 'tv',
 };
 
-jest.mock('../src/lib/prisma', () => ({
+jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     rating: {
       findUnique: jest.fn(),
@@ -19,9 +21,6 @@ jest.mock('../src/lib/prisma', () => ({
     },
   },
 }));
-
-const makeToken = (sub = '1') =>
-  jwt.sign({ sub, email: 'test@test.com', role: 'user' }, 'test-secret');
 
 beforeEach(() => {
   process.env.JWT_SECRET = 'test-secret';
@@ -38,7 +37,7 @@ describe('DELETE /ratings/:id', () => {
 
     const res = await request(app)
       .delete('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken()}`);
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(204);
     expect(prisma.rating.delete).toHaveBeenCalledWith({ where: { id: 1 } });
@@ -53,7 +52,7 @@ describe('DELETE /ratings/:id', () => {
   it('returns 400 when id is invalid', async () => {
     const res = await request(app)
       .delete('/ratings/not-a-number')
-      .set('Authorization', `Bearer ${makeToken()}`);
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/invalid rating id/i);
@@ -64,7 +63,7 @@ describe('DELETE /ratings/:id', () => {
 
     const res = await request(app)
       .delete('/ratings/999')
-      .set('Authorization', `Bearer ${makeToken()}`);
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(404);
     expect(res.body.error).toMatch(/rating not found/i);
@@ -78,7 +77,7 @@ describe('DELETE /ratings/:id', () => {
 
     const res = await request(app)
       .delete('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken('1')}`);
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(403);
     expect(prisma.rating.delete).not.toHaveBeenCalled();
@@ -90,7 +89,7 @@ describe('DELETE /ratings/:id', () => {
 
     const res = await request(app)
       .delete('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken()}`);
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(500);
     expect(res.body.error).toMatch(/failed to delete rating/i);

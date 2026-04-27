@@ -1,6 +1,8 @@
 import request from 'supertest';
-import { app } from '../src/app';
-import { prisma } from '../src/lib/prisma';
+import { app } from '../../src/app';
+import { prisma } from '../../src/lib/prisma';
+
+process.env.JWT_SECRET = 'test-secret';
 
 const MOCK_REVIEW = {
   id: 1,
@@ -13,7 +15,7 @@ const MOCK_REVIEW = {
   updatedAt: new Date().toISOString(),
 };
 
-jest.mock('../src/lib/prisma', () => ({
+jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     review: {
       findUnique: jest.fn(),
@@ -23,6 +25,7 @@ jest.mock('../src/lib/prisma', () => ({
 
 describe('GET /reviews/:id', () => {
   beforeEach(() => {
+    process.env.JWT_SECRET = 'test-secret';
     jest.clearAllMocks();
   });
 
