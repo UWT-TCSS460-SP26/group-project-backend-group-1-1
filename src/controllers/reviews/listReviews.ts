@@ -1,4 +1,4 @@
- import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
 /**
@@ -7,7 +7,7 @@ import { prisma } from '../../lib/prisma';
  */
 export const listReviews = async (request: Request, response: Response): Promise<void> => {
   const mediaType = request.params.mediaType as string;
-const tmdbId = request.params.tmdbId as string;
+  const tmdbId = request.params.tmdbId as string;
 
   const page = Number(request.query.page) || 1;
   const limit = Number(request.query.limit) || 10;
