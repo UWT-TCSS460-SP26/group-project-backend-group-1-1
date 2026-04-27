@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
+import { Prisma } from '../../generated/prisma/client';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -46,7 +47,12 @@ export const createRating = async (
     });
 
     response.status(201).json(rating);
-  } catch (_error) {
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      response.status(409).json({ error: 'You have already rated this media item' });
+      return;
+    }
+
     response.status(500).json({ error: 'Failed to create rating' });
   }
 };
