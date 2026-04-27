@@ -26,6 +26,10 @@ tags:
     description: User-submitted numeric ratings for movies and TV shows
   - name: Reviews
     description: User-submitted text reviews for movies and TV shows
+  - name: Auth
+    description: |
+      Authentication endpoints. The current `/auth/dev-login` is a Sprint 2 stand-in
+      and will be replaced by the real auth provider in Sprint 3.
 
 paths:
   /health:
@@ -357,6 +361,59 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /auth/dev-login:
+    post:
+      tags: [Auth]
+      summary: Dev Login (Sprint 2 only)
+      description: |
+        **Sprint 2 stand-in — DO NOT deploy publicly.**
+        Accepts a username, find-or-creates a `User` row with `role='user'`,
+        and returns a signed JWT. Does NOT validate a password.
+        Replaced by the real auth integration in Sprint 3.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: alice
+                email:
+                  type: string
+                  format: email
+                  description: Optional. Defaults to `<username>@dev.local`.
+                  example: alice@example.test
+              required: [username]
+      responses:
+        '200':
+          description: JWT for the (possibly newly created) user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: |
+                      Signed JWT. Payload contains `{ sub, email, role, iat, exp }`.
+                      Send as `Authorization: Bearer <token>` to authenticated endpoints.
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                required: [token]
+        '400':
+          description: '`username` is missing or not a string.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: '`JWT_SECRET` not configured on the server.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /ratings:
     post:
       tags: [Ratings]
@@ -603,7 +660,9 @@ paths:
     post:
       tags: [Reviews]
       summary: Create Review
-      description: Creates a text review for a movie or TV show, owned by the authenticated user.
+      description: |
+        Creates a text review for a movie or TV show, owned by the authenticated user.
+        A user can only review a given (mediaType, tmdbId) once — duplicates return 409.
       security:
         - bearerAuth: []
       requestBody:
@@ -620,13 +679,74 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
         '400':
-          description: Invalid review fields.
+          description: 'Invalid review fields. Returns a `{ errors: { fieldErrors } }` envelope from Zod validation.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZodErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Missing or invalid bearer token.
+        '409':
+          description: Caller has already reviewed this media item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reviews/media/{mediaType}/{tmdbId}:
+    get:
+      tags: [Reviews]
+      summary: List Reviews for a Media Item
+      description: Returns paginated reviews for a given TMDB media item, newest first.
+      parameters:
+        - name: mediaType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [movie, tv]
+            example: tv
+        - name: tmdbId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1399'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          required: false
+          description: Page size (capped at 50).
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Page of reviews.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewsListResponse'
+        '400':
+          description: Invalid mediaType, tmdbId, or pagination values.
           content:
             application/json:
               schema:
@@ -649,6 +769,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
             example: 1
       responses:
         '200':
@@ -658,7 +779,109 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
         '400':
+          description: 'Invalid review id. Returns a `{ errors: { fieldErrors } }` envelope from Zod validation.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZodErrorResponse'
+        '404':
+          description: Review not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Reviews]
+      summary: Update Review
+      description: Updates the title and/or description of a review owned by the authenticated user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpdateInput'
+      responses:
+        '200':
+          description: Updated review.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid id, title, or description.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller does not own this review.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Review not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags: [Reviews]
+      summary: Delete Review
+      description: Deletes a review. Allowed for the review's owner or any user with the `admin` role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Review deleted.
+        '400':
           description: Invalid review id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is neither the review's owner nor an admin.
           content:
             application/json:
               schema:
@@ -688,13 +911,16 @@ components:
   schemas:
     ErrorResponse:
       type: object
-      description: Standard error envelope returned on 4xx and 5xx responses.
+      description: |
+        Standard error envelope returned on 4xx and 5xx responses.
+        Note: Zod-validated endpoints (`POST /reviews`, `GET /reviews/{id}`)
+        return a `ZodErrorResponse` instead.
       properties:
-        message:
+        error:
           type: string
           description: Human-readable description of the error.
           example: 'Missing required query parameter: query'
-      required: [message]
+      required: [error]
 
     PopularMovieSummary:
       type: object
@@ -1112,10 +1338,14 @@ components:
 
     ReviewInput:
       type: object
-      description: Request body for `POST /reviews`.
+      description: |
+        Request body for `POST /reviews`.
+        `title` is optional — if omitted, the server generates `Review of {tmdbId}`.
+        `body` is stored as the review's `description` field.
       properties:
         tmdbId:
           type: string
+          minLength: 1
           example: '1399'
         mediaType:
           type: string
@@ -1124,7 +1354,57 @@ components:
         title:
           type: string
           example: 'Brilliant'
+        body:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: The review text. Stored as `description` on the response.
+          example: 'A masterpiece of modern cinema.'
+      required: [tmdbId, mediaType, body]
+
+    ReviewUpdateInput:
+      type: object
+      description: |
+        Request body for `PUT /reviews/{id}`. All fields optional —
+        only provided fields are written.
+      properties:
+        title:
+          type: string
+          example: 'Brilliant (revised)'
         description:
           type: string
-          example: 'A masterpiece of modern cinema.'
-      required: [tmdbId, mediaType, title, description]
+          example: 'On rewatch, even better than I remembered.'
+
+    ReviewsListResponse:
+      type: object
+      description: Paginated reviews list for `GET /reviews/media/{mediaType}/{tmdbId}`.
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+      required: [page, limit, results]
+
+    ZodErrorResponse:
+      type: object
+      description: |
+        Error envelope returned when Zod validation fails (currently `POST /reviews`
+        and `GET /reviews/{id}`). Each key in `errors` is a field name and maps to
+        an array of human-readable error messages.
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            body: ['Review body cannot be empty']
+            mediaType: ['Invalid input']
+      required: [errors]
