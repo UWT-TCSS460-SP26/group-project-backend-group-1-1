@@ -20,8 +20,7 @@ jest.mock('../src/lib/prisma', () => ({
   },
 }));
 
-const makeToken = () =>
-  jwt.sign({ sub: '1', email: 'test@test.com', role: 'user' }, 'test-secret');
+const makeToken = () => jwt.sign({ sub: '1', email: 'test@test.com', role: 'user' }, 'test-secret');
 
 beforeEach(() => {
   process.env.JWT_SECRET = 'test-secret';
@@ -52,14 +51,11 @@ describe('POST /ratings', () => {
   it('creates rating with authenticated user id', async () => {
     (prisma.rating.create as jest.Mock).mockResolvedValue(CREATED_RATING);
 
-    await request(app)
-      .post('/ratings')
-      .set('Authorization', `Bearer ${makeToken()}`)
-      .send({
-        tmdbId: '1399',
-        mediaType: 'tv',
-        score: 8,
-      });
+    await request(app).post('/ratings').set('Authorization', `Bearer ${makeToken()}`).send({
+      tmdbId: '1399',
+      mediaType: 'tv',
+      score: 8,
+    });
 
     expect(prisma.rating.create).toHaveBeenCalledWith({
       data: {
@@ -123,13 +119,10 @@ describe('POST /ratings', () => {
   });
 
   it('returns 409 if user already rated this media', async () => {
-    const prismaError = new Prisma.PrismaClientKnownRequestError(
-      'Unique constraint failed',
-      {
-        code: 'P2002',
-        clientVersion: 'test',
-      }
-    );
+    const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+      code: 'P2002',
+      clientVersion: 'test',
+    });
 
     (prisma.rating.create as jest.Mock).mockRejectedValue(prismaError);
 
@@ -147,9 +140,7 @@ describe('POST /ratings', () => {
   });
 
   it('returns 500 when Prisma create fails', async () => {
-    (prisma.rating.create as jest.Mock).mockRejectedValue(
-      new Error('database fail')
-    );
+    (prisma.rating.create as jest.Mock).mockRejectedValue(new Error('database fail'));
 
     const res = await request(app)
       .post('/ratings')

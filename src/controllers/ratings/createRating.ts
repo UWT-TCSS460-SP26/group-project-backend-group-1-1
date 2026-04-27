@@ -48,13 +48,8 @@ export const createRating = async (
 
     response.status(201).json(rating);
   } catch (error: unknown) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
-      response
-        .status(409)
-        .json({ error: 'You have already rated this media item' });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      response.status(409).json({ error: 'You have already rated this media item' });
       return;
     }
 
