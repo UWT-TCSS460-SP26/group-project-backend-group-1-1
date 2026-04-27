@@ -1,12 +1,14 @@
-git # Compiled output
+# Compiled output
 dist/
+*.tsbuildinfo
 
 # Dependencies
 node_modules/
 
 # Environment
 .env
-.env.local
+.env.*
+!.env.example
 
 # IDE
 .vscode/
@@ -23,4 +25,10 @@ yarn-error.log
 # Coverage
 coverage/
 
+# Prisma generated client
 src/generated/prisma/
+
+# Nutshell — local server state and API key
+.nutshell-api-key
+.nutshell-server.pid
+.nutshell-server.log
