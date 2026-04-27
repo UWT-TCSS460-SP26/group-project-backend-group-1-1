@@ -1,15 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
-/**
- * GET /ratings/:id
- * Public. Returns a single rating by its primary key.
- *
- * TODO:
- *   - parse :id as int, 400 if invalid
- *   - prisma.rating.findUnique
- *   - 404 if not found
- */
 export const getRating = async (request: Request, response: Response): Promise<void> => {
   const id = Number(request.params.id);
 

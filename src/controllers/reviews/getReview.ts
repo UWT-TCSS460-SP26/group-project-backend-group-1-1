@@ -1,13 +1,24 @@
 import { Request, Response } from 'express';
+import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 
-export const getReview = async (request: Request, response: Response): Promise<void> => {
-  const id = Number(request.params.id);
+const getReviewSchema = z.object({
+  id: z.coerce.number().int().positive('Review ID must be a positive integer'),
+});
 
-  if (!Number.isInteger(id)) {
-    response.status(400).json({ error: 'Invalid review id' });
+/**
+ * GET /reviews/:id
+ * Public. Returns a single review by its primary key.
+ */
+export const getReview = async (request: Request, response: Response): Promise<void> => {
+  const result = getReviewSchema.safeParse(request.params);
+
+  if (!result.success) {
+    response.status(400).json({ errors: result.error.flatten().fieldErrors });
     return;
   }
+
+  const { id } = result.data;
 
   try {
     const review = await prisma.review.findUnique({
@@ -19,7 +30,7 @@ export const getReview = async (request: Request, response: Response): Promise<v
       return;
     }
 
-    response.status(200).json(review);
+    response.json(review);
   } catch (_error) {
     response.status(500).json({ error: 'Failed to fetch review' });
   }

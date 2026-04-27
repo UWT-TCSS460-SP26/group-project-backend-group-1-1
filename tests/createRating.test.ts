@@ -2,6 +2,7 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../src/app';
 import { prisma } from '../src/lib/prisma';
+import { Prisma } from '../src/generated/prisma/client';
 
 const CREATED_RATING = {
   id: 1,
@@ -102,6 +103,40 @@ describe('POST /ratings', () => {
     });
 
     expect(res.status).toBe(401);
+  });
+
+  it('returns 401 for invalid token', async () => {
+    const res = await request(app)
+      .post('/ratings')
+      .set('Authorization', 'Bearer invalid-token')
+      .send({
+        tmdbId: '1399',
+        mediaType: 'tv',
+        score: 8,
+      });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 409 if user already rated this media', async () => {
+    const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+      code: 'P2002',
+      clientVersion: 'test',
+    });
+
+    (prisma.rating.create as jest.Mock).mockRejectedValue(prismaError);
+
+    const res = await request(app)
+      .post('/ratings')
+      .set('Authorization', `Bearer ${makeToken()}`)
+      .send({
+        tmdbId: '1399',
+        mediaType: 'tv',
+        score: 8,
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/already/i);
   });
 
   it('returns 500 when Prisma create fails', async () => {
