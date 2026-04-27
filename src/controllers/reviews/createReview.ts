@@ -1,16 +1,46 @@
 import { Request, Response } from 'express';
+import { prisma } from '../../lib/prisma';
 
-/**
- * POST /reviews
- * Authenticated. Creates a review owned by req.user.
- *
- * Body: { tmdbId: number, mediaType: 'movie' | 'tv', title?: string, body: string }
- * Response: 201 with the created review.
- *
- * TODO:
- *   - validate body
- *   - prisma.review.create with userId = req.user.sub
- */
-export const createReview = async (_request: Request, response: Response): Promise<void> => {
-  response.status(501).json({ error: 'Not implemented' });
+export const createReview = async (request: Request, response: Response): Promise<void> => {
+  const { tmdbId, mediaType, title, description } = request.body as {
+    tmdbId?: unknown;
+    mediaType?: unknown;
+    title?: unknown;
+    description?: unknown;
+  };
+  const user = request.user;
+
+  if (!user?.sub) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  if (
+    typeof tmdbId !== 'string' ||
+    typeof mediaType !== 'string' ||
+    !['movie', 'tv'].includes(mediaType) ||
+    typeof title !== 'string' ||
+    typeof description !== 'string' ||
+    title.trim().length === 0 ||
+    description.trim().length === 0
+  ) {
+    response.status(400).json({ error: 'Invalid review fields' });
+    return;
+  }
+
+  try {
+    const review = await prisma.review.create({
+      data: {
+        userId: Number(user.sub),
+        tmdbId,
+        mediaType,
+        title,
+        description,
+      },
+    });
+
+    response.status(201).json(review);
+  } catch (_error) {
+    response.status(500).json({ error: 'Failed to create review' });
+  }
 };

@@ -22,6 +22,10 @@ tags:
     description: Movie search, popular, and detail endpoints
   - name: TV
     description: TV show search, popular, and detail endpoints
+  - name: Ratings
+    description: User-submitted numeric ratings for movies and TV shows
+  - name: Reviews
+    description: User-submitted text reviews for movies and TV shows
 
 paths:
   /health:
@@ -353,7 +357,334 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /ratings:
+    post:
+      tags: [Ratings]
+      summary: Create Rating
+      description: Creates a numeric rating (0–10) for a movie or TV show, owned by the authenticated user.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingInput'
+      responses:
+        '201':
+          description: Rating created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '400':
+          description: Invalid rating fields or score out of range.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ratings/{id}:
+    get:
+      tags: [Ratings]
+      summary: Get Rating by ID
+      description: Returns a single rating by its primary key.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Rating primary key.
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: The requested rating.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '400':
+          description: Invalid rating id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Rating not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Ratings]
+      summary: Update Rating
+      description: Updates the score of a rating owned by the authenticated user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  example: 9
+              required: [score]
+      responses:
+        '200':
+          description: Updated rating.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '400':
+          description: Invalid id, invalid fields, or score out of range.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller does not own this rating.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Rating not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags: [Ratings]
+      summary: Delete Rating
+      description: Deletes a rating owned by the authenticated user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Rating deleted.
+        '400':
+          description: Invalid rating id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller does not own this rating.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Rating not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ratings/media/{mediaType}/{tmdbId}:
+    get:
+      tags: [Ratings]
+      summary: List Ratings for a Media Item
+      description: Returns paginated ratings plus an aggregate average for a given TMDB media item.
+      parameters:
+        - name: mediaType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [movie, tv]
+            example: tv
+        - name: tmdbId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1399'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          required: false
+          description: Page size (capped at 50).
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Page of ratings with aggregate average.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingsListResponse'
+        '400':
+          description: Invalid mediaType or tmdbId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reviews:
+    post:
+      tags: [Reviews]
+      summary: Create Review
+      description: Creates a text review for a movie or TV show, owned by the authenticated user.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewInput'
+      responses:
+        '201':
+          description: Review created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid review fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reviews/{id}:
+    get:
+      tags: [Reviews]
+      summary: Get Review by ID
+      description: Returns a single review by its primary key.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: The requested review.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid review id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Review not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Bearer token issued by `POST /auth/dev-login` (dev) or the eventual auth provider.
+        Send as `Authorization: Bearer <token>`.
   schemas:
     ErrorResponse:
       type: object
@@ -672,3 +1003,128 @@ components:
           status,
           genres,
         ]
+
+    Rating:
+      type: object
+      description: A user-submitted numeric rating for a TMDB media item.
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          description: ID of the user who owns this rating.
+          example: 1
+        score:
+          type: integer
+          minimum: 0
+          maximum: 10
+          example: 8
+        tmdbId:
+          type: string
+          description: TMDB identifier for the rated media item.
+          example: '1399'
+        mediaType:
+          type: string
+          enum: [movie, tv]
+          example: tv
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, userId, score, tmdbId, mediaType]
+
+    RatingInput:
+      type: object
+      description: Request body for `POST /ratings`.
+      properties:
+        tmdbId:
+          type: string
+          example: '1399'
+        mediaType:
+          type: string
+          enum: [movie, tv]
+          example: tv
+        score:
+          type: integer
+          minimum: 0
+          maximum: 10
+          example: 8
+      required: [tmdbId, mediaType, score]
+
+    RatingsListResponse:
+      type: object
+      description: Paginated ratings list with aggregate average.
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          description: Total ratings for this media item across all pages.
+          example: 1
+        averageScore:
+          type: number
+          format: float
+          description: Average score across all ratings for this media item. `0` when there are no ratings.
+          example: 8
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rating'
+      required: [page, limit, total, averageScore, results]
+
+    Review:
+      type: object
+      description: A user-submitted text review for a TMDB media item.
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: 'Brilliant'
+        description:
+          type: string
+          example: 'A masterpiece of modern cinema.'
+        tmdbId:
+          type: string
+          example: '1399'
+        mediaType:
+          type: string
+          enum: [movie, tv]
+          example: tv
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, userId, title, description, tmdbId, mediaType]
+
+    ReviewInput:
+      type: object
+      description: Request body for `POST /reviews`.
+      properties:
+        tmdbId:
+          type: string
+          example: '1399'
+        mediaType:
+          type: string
+          enum: [movie, tv]
+          example: tv
+        title:
+          type: string
+          example: 'Brilliant'
+        description:
+          type: string
+          example: 'A masterpiece of modern cinema.'
+      required: [tmdbId, mediaType, title, description]
