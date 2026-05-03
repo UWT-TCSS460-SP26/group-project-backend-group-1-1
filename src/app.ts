@@ -10,7 +10,6 @@ import { moviesSearchRouter } from './routes/moviesSearch';
 import dotenv from 'dotenv';
 import { movieIDRouter } from './routes/movieID';
 import { tvIDRouter } from './routes/tvID';
-import devAuthRouter from './routes/devAuth';
 import { ratingsRouter } from './routes/ratings';
 import { reviewsRouter } from './routes/reviews';
 dotenv.config();
@@ -43,9 +42,17 @@ app.use(tvSearchRouter);
 app.use(moviesSearchRouter);
 app.use(movieIDRouter);
 app.use(tvIDRouter);
-app.use('/auth', devAuthRouter);
 app.use('/ratings', ratingsRouter);
 app.use('/reviews', reviewsRouter);
+
+app.use((error: Error, _request: Request, response: Response, next: express.NextFunction) => {
+  if (error.name === 'UnauthorizedError') {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  next(error);
+});
 
 // 404 handler — must be after all routes
 app.use((_request: Request, response: Response) => {
