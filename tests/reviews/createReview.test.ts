@@ -1,11 +1,13 @@
 import request from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../src/app';
-import { prisma } from '../src/lib/prisma';
-import { Prisma } from '../src/generated/prisma/client';
+import { app } from '../../src/app';
+import { prisma } from '../../src/lib/prisma';
+import { Prisma } from '../../src/generated/prisma/client';
+import { generateTestToken } from '../testHelpers';
+
+process.env.JWT_SECRET = 'test-secret';
 
 // Mock the prisma client
-jest.mock('../src/lib/prisma', () => ({
+jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     review: {
       create: jest.fn(),
@@ -13,16 +15,11 @@ jest.mock('../src/lib/prisma', () => ({
   },
 }));
 
-const JWT_SECRET = 'test-secret';
 const USER_ID = 123;
-const VALID_TOKEN = jwt.sign(
-  { sub: USER_ID.toString(), email: 'test@example.com', role: 'user' },
-  JWT_SECRET
-);
 
 describe('POST /reviews', () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = JWT_SECRET;
+    process.env.JWT_SECRET = 'test-secret';
     jest.clearAllMocks();
   });
 
@@ -47,7 +44,7 @@ describe('POST /reviews', () => {
 
     const res = await request(app)
       .post('/reviews')
-      .set('Authorization', `Bearer ${VALID_TOKEN}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: USER_ID.toString() })}`)
       .send(validReview);
 
     expect(res.status).toBe(201);
@@ -85,7 +82,7 @@ describe('POST /reviews', () => {
 
     const res = await request(app)
       .post('/reviews')
-      .set('Authorization', `Bearer ${VALID_TOKEN}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: USER_ID.toString() })}`)
       .send(reviewWithoutTitle);
 
     expect(res.status).toBe(201);
@@ -102,7 +99,7 @@ describe('POST /reviews', () => {
   it('returns 400 if required fields are missing', async () => {
     const res = await request(app)
       .post('/reviews')
-      .set('Authorization', `Bearer ${VALID_TOKEN}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: USER_ID.toString() })}`)
       .send({ mediaType: 'movie' }); // Missing tmdbId and body
 
     expect(res.status).toBe(400);
@@ -113,7 +110,7 @@ describe('POST /reviews', () => {
   it('returns 400 for invalid mediaType', async () => {
     const res = await request(app)
       .post('/reviews')
-      .set('Authorization', `Bearer ${VALID_TOKEN}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: USER_ID.toString() })}`)
       .send({ ...validReview, mediaType: 'book' });
 
     expect(res.status).toBe(400);
@@ -147,7 +144,7 @@ describe('POST /reviews', () => {
 
     const res = await request(app)
       .post('/reviews')
-      .set('Authorization', `Bearer ${VALID_TOKEN}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: USER_ID.toString() })}`)
       .send(validReview);
 
     expect(res.status).toBe(409);
@@ -159,7 +156,7 @@ describe('POST /reviews', () => {
 
     const res = await request(app)
       .post('/reviews')
-      .set('Authorization', `Bearer ${VALID_TOKEN}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: USER_ID.toString() })}`)
       .send(validReview);
 
     expect(res.status).toBe(500);

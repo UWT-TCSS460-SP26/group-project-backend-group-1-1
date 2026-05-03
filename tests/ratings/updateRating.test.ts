@@ -1,7 +1,9 @@
 import request from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../src/app';
-import { prisma } from '../src/lib/prisma';
+import { app } from '../../src/app';
+import { prisma } from '../../src/lib/prisma';
+import { generateTestToken } from '../testHelpers';
+
+process.env.JWT_SECRET = 'test-secret';
 
 const EXISTING_RATING = {
   id: 1,
@@ -16,7 +18,7 @@ const UPDATED_RATING = {
   score: 9,
 };
 
-jest.mock('../src/lib/prisma', () => ({
+jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     rating: {
       findUnique: jest.fn(),
@@ -24,9 +26,6 @@ jest.mock('../src/lib/prisma', () => ({
     },
   },
 }));
-
-const makeToken = (sub = '1') =>
-  jwt.sign({ sub, email: 'test@test.com', role: 'user' }, 'test-secret');
 
 beforeEach(() => {
   process.env.JWT_SECRET = 'test-secret';
@@ -43,7 +42,7 @@ describe('PUT /ratings/:id', () => {
 
     const res = await request(app)
       .put('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({ score: 9 });
 
     expect(res.status).toBe(200);
@@ -63,7 +62,7 @@ describe('PUT /ratings/:id', () => {
   it('returns 400 when id is invalid', async () => {
     const res = await request(app)
       .put('/ratings/not-a-number')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({ score: 9 });
 
     expect(res.status).toBe(400);
@@ -73,7 +72,7 @@ describe('PUT /ratings/:id', () => {
   it('returns 400 when score is missing or not an integer', async () => {
     const res = await request(app)
       .put('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({ score: 'nine' });
 
     expect(res.status).toBe(400);
@@ -83,7 +82,7 @@ describe('PUT /ratings/:id', () => {
   it('returns 400 when score is out of range', async () => {
     const res = await request(app)
       .put('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({ score: 99 });
 
     expect(res.status).toBe(400);
@@ -95,7 +94,7 @@ describe('PUT /ratings/:id', () => {
 
     const res = await request(app)
       .put('/ratings/999')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({ score: 9 });
 
     expect(res.status).toBe(404);
@@ -110,7 +109,7 @@ describe('PUT /ratings/:id', () => {
 
     const res = await request(app)
       .put('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken('1')}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({ score: 9 });
 
     expect(res.status).toBe(403);
@@ -123,7 +122,7 @@ describe('PUT /ratings/:id', () => {
 
     const res = await request(app)
       .put('/ratings/1')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({ score: 9 });
 
     expect(res.status).toBe(500);

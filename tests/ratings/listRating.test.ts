@@ -1,6 +1,8 @@
 import request from 'supertest';
-import { app } from '../src/app';
-import { prisma } from '../src/lib/prisma';
+import { app } from '../../src/app';
+import { prisma } from '../../src/lib/prisma';
+
+process.env.JWT_SECRET = 'test-secret';
 
 const RATINGS = [
   {
@@ -12,7 +14,7 @@ const RATINGS = [
   },
 ];
 
-jest.mock('../src/lib/prisma', () => ({
+jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     rating: {
       findMany: jest.fn(),

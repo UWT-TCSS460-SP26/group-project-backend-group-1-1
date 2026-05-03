@@ -1,8 +1,10 @@
 import request from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../src/app';
-import { prisma } from '../src/lib/prisma';
-import { Prisma } from '../src/generated/prisma/client';
+import { app } from '../../src/app';
+import { prisma } from '../../src/lib/prisma';
+import { Prisma } from '../../src/generated/prisma/client';
+import { generateTestToken } from '../testHelpers';
+
+process.env.JWT_SECRET = 'test-secret';
 
 const CREATED_RATING = {
   id: 1,
@@ -12,15 +14,13 @@ const CREATED_RATING = {
   mediaType: 'tv',
 };
 
-jest.mock('../src/lib/prisma', () => ({
+jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     rating: {
       create: jest.fn(),
     },
   },
 }));
-
-const makeToken = () => jwt.sign({ sub: '1', email: 'test@test.com', role: 'user' }, 'test-secret');
 
 beforeEach(() => {
   process.env.JWT_SECRET = 'test-secret';
@@ -37,7 +37,7 @@ describe('POST /ratings', () => {
 
     const res = await request(app)
       .post('/ratings')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({
         tmdbId: '1399',
         mediaType: 'tv',
@@ -51,11 +51,14 @@ describe('POST /ratings', () => {
   it('creates rating with authenticated user id', async () => {
     (prisma.rating.create as jest.Mock).mockResolvedValue(CREATED_RATING);
 
-    await request(app).post('/ratings').set('Authorization', `Bearer ${makeToken()}`).send({
-      tmdbId: '1399',
-      mediaType: 'tv',
-      score: 8,
-    });
+    await request(app)
+      .post('/ratings')
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
+      .send({
+        tmdbId: '1399',
+        mediaType: 'tv',
+        score: 8,
+      });
 
     expect(prisma.rating.create).toHaveBeenCalledWith({
       data: {
@@ -70,7 +73,7 @@ describe('POST /ratings', () => {
   it('returns 400 when rating fields are invalid', async () => {
     const res = await request(app)
       .post('/ratings')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({
         tmdbId: 1399,
         mediaType: 'tv',
@@ -84,7 +87,7 @@ describe('POST /ratings', () => {
   it('returns 400 when score is out of range', async () => {
     const res = await request(app)
       .post('/ratings')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({
         tmdbId: '1399',
         mediaType: 'tv',
@@ -128,7 +131,7 @@ describe('POST /ratings', () => {
 
     const res = await request(app)
       .post('/ratings')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({
         tmdbId: '1399',
         mediaType: 'tv',
@@ -144,7 +147,7 @@ describe('POST /ratings', () => {
 
     const res = await request(app)
       .post('/ratings')
-      .set('Authorization', `Bearer ${makeToken()}`)
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
       .send({
         tmdbId: '1399',
         mediaType: 'tv',

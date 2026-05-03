@@ -1,6 +1,9 @@
 import request from 'supertest';
 import { app } from '../../src/app';
 import { prisma } from '../../src/lib/prisma';
+import { generateTestToken } from '../testHelpers';
+
+process.env.JWT_SECRET = 'test-secret';
 
 jest.mock('../../src/lib/prisma', () => ({
   prisma: {
@@ -11,18 +14,11 @@ jest.mock('../../src/lib/prisma', () => ({
   },
 }));
 
-jest.mock('../../src/middleware/requireAuth', () => ({
-  requireAuth: (
-    request: { user?: { sub: string; email: string; role: string } },
-    _response: unknown,
-    next: () => void
-  ) => {
-    request.user = { sub: '1', email: 'test@example.com', role: 'user' };
-    next();
-  },
-}));
-
 describe('PUT /reviews/:id', () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = 'test-secret';
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -30,10 +26,13 @@ describe('PUT /reviews/:id', () => {
   it('returns 404 if review not found', async () => {
     (prisma.review.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const res = await request(app).put('/reviews/1').send({
-      title: 'Updated',
-      description: 'Updated desc',
-    });
+    const res = await request(app)
+      .put('/reviews/1')
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
+      .send({
+        title: 'Updated',
+        description: 'Updated desc',
+      });
 
     expect(res.status).toBe(404);
   });
@@ -44,10 +43,13 @@ describe('PUT /reviews/:id', () => {
       userId: 2,
     });
 
-    const res = await request(app).put('/reviews/1').send({
-      title: 'Updated',
-      description: 'Updated desc',
-    });
+    const res = await request(app)
+      .put('/reviews/1')
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
+      .send({
+        title: 'Updated',
+        description: 'Updated desc',
+      });
 
     expect(res.status).toBe(403);
   });
@@ -67,10 +69,13 @@ describe('PUT /reviews/:id', () => {
       mediaType: 'movie',
     });
 
-    const res = await request(app).put('/reviews/1').send({
-      title: 'Updated',
-      description: 'Updated desc',
-    });
+    const res = await request(app)
+      .put('/reviews/1')
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
+      .send({
+        title: 'Updated',
+        description: 'Updated desc',
+      });
 
     expect(res.status).toBe(200);
     expect(res.body.title).toBe('Updated');

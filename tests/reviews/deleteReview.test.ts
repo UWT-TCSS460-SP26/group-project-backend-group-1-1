@@ -1,6 +1,9 @@
 import request from 'supertest';
 import { app } from '../../src/app';
 import { prisma } from '../../src/lib/prisma';
+import { generateTestToken } from '../testHelpers';
+
+process.env.JWT_SECRET = 'test-secret';
 
 jest.mock('../../src/lib/prisma', () => ({
   prisma: {
@@ -11,18 +14,11 @@ jest.mock('../../src/lib/prisma', () => ({
   },
 }));
 
-jest.mock('../../src/middleware/requireAuth', () => ({
-  requireAuth: (
-    request: { user?: { sub: string; email: string; role: string } },
-    _response: unknown,
-    next: () => void
-  ) => {
-    request.user = { sub: '1', email: 'test@example.com', role: 'user' };
-    next();
-  },
-}));
-
 describe('DELETE /reviews/:id', () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = 'test-secret';
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -30,7 +26,9 @@ describe('DELETE /reviews/:id', () => {
   it('returns 404 if review not found', async () => {
     (prisma.review.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const res = await request(app).delete('/reviews/1');
+    const res = await request(app)
+      .delete('/reviews/1')
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(404);
   });
@@ -41,7 +39,9 @@ describe('DELETE /reviews/:id', () => {
       userId: 2,
     });
 
-    const res = await request(app).delete('/reviews/1');
+    const res = await request(app)
+      .delete('/reviews/1')
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(403);
   });
@@ -57,7 +57,9 @@ describe('DELETE /reviews/:id', () => {
       userId: 1,
     });
 
-    const res = await request(app).delete('/reviews/1');
+    const res = await request(app)
+      .delete('/reviews/1')
+      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`);
 
     expect(res.status).toBe(204);
     expect(prisma.review.delete).toHaveBeenCalledWith({

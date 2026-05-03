@@ -1,6 +1,8 @@
 import request from 'supertest';
-import { app } from '../src/app';
-import { prisma } from '../src/lib/prisma';
+import { app } from '../../src/app';
+import { prisma } from '../../src/lib/prisma';
+
+process.env.JWT_SECRET = 'test-secret';
 
 const RATING = {
   id: 1,
@@ -10,7 +12,7 @@ const RATING = {
   mediaType: 'tv',
 };
 
-jest.mock('../src/lib/prisma', () => ({
+jest.mock('../../src/lib/prisma', () => ({
   prisma: {
     rating: {
       findUnique: jest.fn(),
