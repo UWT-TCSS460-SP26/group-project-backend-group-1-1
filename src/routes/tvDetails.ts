@@ -1,0 +1,114 @@
+import { Router, Request, Response } from 'express';
+
+// import { prisma } from '../lib/prisma';
+
+const router = Router();
+
+const TMDB_URL = 'https://api.themoviedb.org/3/tv';
+
+interface TmdbGenre {
+  id: number;
+  name: string;
+}
+
+interface TmdbTVDetails {
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  first_air_date: string;
+  original_language: string;
+  vote_average: number;
+  number_of_seasons: number;
+  number_of_episodes: number;
+  genres: TmdbGenre[];
+  status: string;
+}
+
+/**
+ * GET /tv/:id/details
+ *
+ * Flagship combined route: TMDB metadata + this community's aggregate
+ * rating, recent reviews, and review count in a single response.
+ *
+ * See movieDetails.ts for response-shape design notes — this route
+ * mirrors that shape for TV media.
+ */
+router.get('/tv/:id/details', async (request: Request, response: Response) => {
+  const id = String(request.params.id);
+  const language = (request.query.language as string) || 'en-US';
+
+  if (!id) {
+    return response.status(400).json({ error: 'TV show id is required' });
+  }
+
+  const token = process.env['API-KEY'];
+  if (!token) {
+    return response.status(500).json({ error: 'TMDB API key is not configured' });
+  }
+
+  const url = new URL(`${TMDB_URL}/${encodeURIComponent(id)}`);
+  url.searchParams.set('language', language);
+
+  try {
+    const upstream = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: 'application/json',
+      },
+    });
+
+    if (!upstream.ok) {
+      return response
+        .status(upstream.status)
+        .json({ error: `Upstream TMDB error: ${upstream.statusText}` });
+    }
+
+    const data = (await upstream.json()) as TmdbTVDetails;
+
+    // TODO: replace stub with real prisma aggregation/find.
+    //
+    // const aggregate = await prisma.rating.aggregate({
+    //   where: { tmdbId: id, mediaType: 'tv' },
+    //   _avg: { score: true },
+    //   _count: { score: true },
+    // });
+    // const recentReviews = await prisma.review.findMany({
+    //   where: { tmdbId: id, mediaType: 'tv' },
+    //   orderBy: { createdAt: 'desc' },
+    //   take: 5,
+    //   select: { id: true, title: true, description: true, createdAt: true },
+    // });
+    const community = { averageScore: null as number | null, reviewCount: 0 };
+    const recentReviews: Array<{
+      id: number;
+      title: string;
+      description: string;
+      createdAt: Date;
+    }> = [];
+
+    return response.json({
+      id: data.id,
+      title: data.name,
+      overview: data.overview,
+      poster_path: data.poster_path,
+      backdrop_path: data.backdrop_path,
+      first_air_date: data.first_air_date,
+      language: data.original_language,
+      rating: data.vote_average,
+      number_of_seasons: data.number_of_seasons,
+      number_of_episodes: data.number_of_episodes,
+      status: data.status,
+      genres: data.genres.map((g) => g.name),
+      community,
+      recentReviews,
+    });
+  } catch (err) {
+    return response
+      .status(502)
+      .json({ error: 'Failed to reach TMDB', detail: (err as Error).message });
+  }
+});
+
+export { router as tvDetailsRouter };
