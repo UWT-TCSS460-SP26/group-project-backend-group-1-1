@@ -10,9 +10,12 @@ import { moviesSearchRouter } from './routes/moviesSearch';
 import dotenv from 'dotenv';
 import { movieIDRouter } from './routes/movieID';
 import { tvIDRouter } from './routes/tvID';
+import { movieDetailsRouter } from './routes/movieDetails';
+import { tvDetailsRouter } from './routes/tvDetails';
 import devAuthRouter from './routes/devAuth';
 import { ratingsRouter } from './routes/ratings';
 import { reviewsRouter } from './routes/reviews';
+import { issuesRouter } from './routes/issues';
 dotenv.config();
 
 const app = express();
@@ -43,9 +46,12 @@ app.use(tvSearchRouter);
 app.use(moviesSearchRouter);
 app.use(movieIDRouter);
 app.use(tvIDRouter);
+app.use(movieDetailsRouter);
+app.use(tvDetailsRouter);
 app.use('/auth', devAuthRouter);
 app.use('/ratings', ratingsRouter);
 app.use('/reviews', reviewsRouter);
+app.use('/issues', issuesRouter);
 
 // 404 handler — must be after all routes
 app.use((_request: Request, response: Response) => {
