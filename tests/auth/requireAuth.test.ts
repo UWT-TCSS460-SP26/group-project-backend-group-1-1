@@ -1,14 +1,3 @@
-// jwks-rsa pulls in `jose` (ESM) which Jest can't parse without extra
-// transform config. The role helpers under test never touch the JWKS
-// verifier, so stub the modules at import time.
-jest.mock('jwks-rsa', () => ({
-  expressJwtSecret: jest.fn(),
-}));
-jest.mock('express-jwt', () => ({
-  expressjwt: jest.fn(),
-  UnauthorizedError: class UnauthorizedError extends Error {},
-}));
-
 import { Request, Response, NextFunction } from 'express';
 import {
   requireRole,

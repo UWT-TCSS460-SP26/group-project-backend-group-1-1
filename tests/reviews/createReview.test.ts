@@ -121,7 +121,7 @@ describe('POST /reviews', () => {
     const res = await request(app).post('/reviews').send(validReview);
 
     expect(res.status).toBe(401);
-    expect(res.body.error).toMatch(/Missing or malformed Authorization header/);
+    expect(res.body.error).toBe('Unauthorized');
   });
 
   it('returns 401 for an invalid token', async () => {
@@ -131,7 +131,7 @@ describe('POST /reviews', () => {
       .send(validReview);
 
     expect(res.status).toBe(401);
-    expect(res.body.error).toMatch(/Invalid or expired token/);
+    expect(res.body.error).toBe('Unauthorized');
   });
 
   it('returns 409 if user already reviewed the media (P2002)', async () => {
