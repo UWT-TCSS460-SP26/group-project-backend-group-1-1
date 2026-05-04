@@ -7,10 +7,11 @@ module.exports = {
     const header = req.headers && req.headers['authorization'];
     if (header && header.startsWith('Bearer ')) {
       const token = header.slice(7);
-      // eslint-disable-next-line no-empty
       try {
         req.auth = jwt.decode(token);
-      } catch {}
+      } catch {
+        req.auth = null;
+      }
     }
     next();
   },
