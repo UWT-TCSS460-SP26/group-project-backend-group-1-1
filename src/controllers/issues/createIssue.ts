@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-// import { prisma } from '../../lib/prisma';
+import { prisma } from '../../lib/prisma';
 
 /**
  * POST /issues
@@ -42,18 +42,18 @@ export const createIssue = async (request: Request, response: Response): Promise
     return;
   }
 
-  // const issue = await prisma.issue.create({
-  //   data: {
-  //     title: title.trim(),
-  //     description: description.trim(),
-  //     stepsToReproduce: stepsToReproduce?.trim() ?? null,
-  //     reporterEmail: reporterEmail?.trim() ?? null,
-  //   },
-  // });
-  // response.status(201).json(issue);
+  try {
+    const issue = await prisma.issue.create({
+      data: {
+        title: title.trim(),
+        description: description.trim(),
+        stepsToReproduce: stepsToReproduce?.trim() || null,
+        reporterEmail: reporterEmail?.trim() || null,
+      },
+    });
 
-  response.status(501).json({
-    error: 'Not implemented',
-    detail: 'Issue model and persistence land with the Sprint 3 schema migration.',
-  });
+    response.status(201).json(issue);
+  } catch (_error) {
+    response.status(500).json({ error: 'Failed to create issue' });
+  }
 };
