@@ -1,4 +1,4 @@
-openapi: 3.0.3
+grep -n "paths:" openapi.yamlopenapi: 3.0.3
 info:
   title: TCSS 460 Group Project API
   description: |
@@ -898,6 +898,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /users/add-subject-id:
+    post:
+      summary: Link authenticated user to subjectId
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subject ID added successfully
+        '401':
+          description: Unauthorized
+        '500':
+          description: Failed to add subjectId
+    
+  /details/{mediaType}/{id}/enriched:
+    get:
+      summary: Get enriched movie or TV show data
+      tags:
+        - Details
+      parameters:
+        - name: mediaType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [movie, tv]
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Combined TMDB, ratings, and reviews data
+        '400':
+          description: Invalid media type
+        '500':
+          description: Failed to fetch enriched data
 
 components:
   securitySchemes:
