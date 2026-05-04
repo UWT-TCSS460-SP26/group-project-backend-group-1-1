@@ -1433,18 +1433,18 @@ components:
       properties:
         title:
           type: string
-          example: "Bug title"
+          example: 'Bug title'
         description:
           type: string
-          example: "Something broke"
+          example: 'Something broke'
         stepsToReproduce:
           type: string
           nullable: true
-          example: "Click button"
+          example: 'Click button'
         reporterEmail:
           type: string
           nullable: true
-          example: "user@email.com"
+          example: 'user@email.com'
 
     Issue:
       type: object
@@ -1464,7 +1464,7 @@ components:
           nullable: true
         status:
           type: string
-          example: "OPEN"
+          example: 'OPEN'
         createdAt:
           type: string
           format: date-time
