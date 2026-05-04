@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../../src/app';
 import { prisma } from '../../src/lib/prisma';
 import { generateTestToken } from '../testHelpers';
+import { resolveLocalUser } from '../../src/auth/resolveLocalUser';
 
 process.env.JWT_SECRET = 'test-secret';
 
@@ -11,16 +12,58 @@ jest.mock('../../src/lib/prisma', () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
+
+jest.mock('../../src/auth/resolveLocalUser', () => ({
+  resolveLocalUser: jest.fn(),
+}));
+
+const USER_ID = 123;
 
 describe('PUT /reviews/:id', () => {
   beforeEach(() => {
     process.env.JWT_SECRET = 'test-secret';
+    jest.clearAllMocks();
+    (resolveLocalUser as jest.Mock).mockResolvedValue({ id: USER_ID });
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  const validUpdate = {
+    title: 'New Title',
+    description: 'Updated description',
+  };
+
+  it('returns 200 and updated review on success', async () => {
+    const existingReview = { id: 1, userId: USER_ID, title: 'Old', description: 'Old' };
+    const updatedReview = { ...existingReview, ...validUpdate };
+
+    (prisma.review.findUnique as jest.Mock).mockResolvedValue(existingReview);
+    (prisma.review.update as jest.Mock).mockResolvedValue(updatedReview);
+
+    const res = await request(app)
+      .put('/reviews/1')
+      .set('Authorization', 'Bearer ' + generateTestToken({ sub: USER_ID.toString() }))
+      .send(validUpdate);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(updatedReview);
+  });
+
+  it('returns 403 if user does not own the review', async () => {
+    const existingReview = { id: 1, userId: 999, title: 'Old', description: 'Old' };
+
+    (prisma.review.findUnique as jest.Mock).mockResolvedValue(existingReview);
+
+    const res = await request(app)
+      .put('/reviews/1')
+      .set('Authorization', 'Bearer ' + generateTestToken({ sub: USER_ID.toString() }))
+      .send(validUpdate);
+
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('Forbidden');
   });
 
   it('returns 404 if review not found', async () => {
@@ -28,57 +71,10 @@ describe('PUT /reviews/:id', () => {
 
     const res = await request(app)
       .put('/reviews/1')
-      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
-      .send({
-        title: 'Updated',
-        description: 'Updated desc',
-      });
+      .set('Authorization', 'Bearer ' + generateTestToken({ sub: USER_ID.toString() }))
+      .send(validUpdate);
 
     expect(res.status).toBe(404);
-  });
-
-  it('returns 403 if user does not own review', async () => {
-    (prisma.review.findUnique as jest.Mock).mockResolvedValue({
-      id: 1,
-      userId: 2,
-    });
-
-    const res = await request(app)
-      .put('/reviews/1')
-      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
-      .send({
-        title: 'Updated',
-        description: 'Updated desc',
-      });
-
-    expect(res.status).toBe(403);
-  });
-
-  it('updates review successfully', async () => {
-    (prisma.review.findUnique as jest.Mock).mockResolvedValue({
-      id: 1,
-      userId: 1,
-    });
-
-    (prisma.review.update as jest.Mock).mockResolvedValue({
-      id: 1,
-      userId: 1,
-      title: 'Updated',
-      description: 'Updated desc',
-      tmdbId: '123',
-      mediaType: 'movie',
-    });
-
-    const res = await request(app)
-      .put('/reviews/1')
-      .set('Authorization', `Bearer ${generateTestToken({ sub: '1' })}`)
-      .send({
-        title: 'Updated',
-        description: 'Updated desc',
-      });
-
-    expect(res.status).toBe(200);
-    expect(res.body.title).toBe('Updated');
-    expect(res.body.description).toBe('Updated desc');
+    expect(res.body.error).toBe('Review not found');
   });
 });

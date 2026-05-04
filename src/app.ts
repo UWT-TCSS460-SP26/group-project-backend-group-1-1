@@ -22,7 +22,22 @@ dotenv.config();
 const app = express();
 
 // Application-level middleware
-app.use(cors());
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || [];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json());
 app.use('/users', usersRouter);
 app.use('/details', movieDetailsRouter);
