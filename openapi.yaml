@@ -857,7 +857,6 @@ paths:
           description: Unauthorized
         '500':
           description: Failed to add subjectId
-
   /details/{mediaType}/{id}/enriched:
     get:
       summary: Get enriched movie or TV show data
