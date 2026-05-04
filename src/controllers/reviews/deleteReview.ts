@@ -1,22 +1,11 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    sub: string;
-    email: string;
-    role: string;
-  };
-}
-
 /**
  * DELETE /reviews/:id
  * Authenticated + ownership. Deletes a review the caller owns.
  */
-export const deleteReview = async (
-  request: AuthenticatedRequest,
-  response: Response
-): Promise<void> => {
+export const deleteReview = async (request: Request, response: Response): Promise<void> => {
   const id = Number(request.params.id);
   const user = request.user;
 
@@ -41,7 +30,7 @@ export const deleteReview = async (
     }
 
     // Only owner OR admin can delete
-    if (review.userId !== Number(user.sub) && user.role !== 'admin') {
+    if (review.userId !== Number(user.sub) && user.role !== 'Admin') {
       response.status(403).json({ error: 'Forbidden' });
       return;
     }
