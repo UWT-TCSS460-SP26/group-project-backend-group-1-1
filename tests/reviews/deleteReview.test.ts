@@ -49,7 +49,10 @@ describe('DELETE /reviews/:id', () => {
 
     const res = await request(app)
       .delete('/reviews/1')
-      .set('Authorization', 'Bearer ' + generateTestToken({ sub: USER_ID.toString(), role: 'Admin' }));
+      .set(
+        'Authorization',
+        'Bearer ' + generateTestToken({ sub: USER_ID.toString(), role: 'Admin' })
+      );
 
     expect(res.status).toBe(204);
   });
@@ -60,7 +63,10 @@ describe('DELETE /reviews/:id', () => {
 
     const res = await request(app)
       .delete('/reviews/1')
-      .set('Authorization', 'Bearer ' + generateTestToken({ sub: USER_ID.toString(), role: 'User' }));
+      .set(
+        'Authorization',
+        'Bearer ' + generateTestToken({ sub: USER_ID.toString(), role: 'User' })
+      );
 
     expect(res.status).toBe(403);
   });
