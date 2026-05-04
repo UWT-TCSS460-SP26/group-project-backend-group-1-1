@@ -30,6 +30,8 @@ tags:
     description: |
       Authentication endpoints. The current `/auth/dev-login` is a Sprint 2 stand-in
       and will be replaced by the real auth provider in Sprint 3.
+  - name: Issues
+    description: Public bug report submission endpoints
 
 paths:
   /health:
@@ -408,7 +410,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: '`JWT_SECRET` not configured on the server.'
+          description: 'Authentication is not configured on the server.'
           content:
             application/json:
               schema:
@@ -899,6 +901,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /issues:
+    post:
+      tags:
+        - Issues
+      summary: Create Issue
+      description: Public bug report submission. No authentication required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIssueRequest'
+      responses:
+        '201':
+          description: Issue created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1303,7 +1337,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Rating'
-      required: [page, limit, total, averageScore, results]
+            required: [page, limit, total, averageScore, results]
 
     Review:
       type: object
@@ -1390,6 +1424,53 @@ components:
           items:
             $ref: '#/components/schemas/Review'
       required: [page, limit, results]
+
+    CreateIssueRequest:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          example: "Bug title"
+        description:
+          type: string
+          example: "Something broke"
+        stepsToReproduce:
+          type: string
+          nullable: true
+          example: "Click button"
+        reporterEmail:
+          type: string
+          nullable: true
+          example: "user@email.com"
+
+    Issue:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+        description:
+          type: string
+        stepsToReproduce:
+          type: string
+          nullable: true
+        reporterEmail:
+          type: string
+          nullable: true
+        status:
+          type: string
+          example: "OPEN"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     ZodErrorResponse:
       type: object
