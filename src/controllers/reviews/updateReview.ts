@@ -1,12 +1,16 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
+import { resolveLocalUser } from '../../auth/resolveLocalUser';
 
 export const updateReview = async (request: Request, response: Response): Promise<void> => {
   const id = Number(request.params.id);
   const user = request.user;
   const { title, description } = request.body;
 
-  if (!user?.sub) {
+  const authHeader = request.headers.authorization;
+  const token = authHeader?.split(' ')[1];
+
+  if (!token || !user?.sub) {
     response.status(401).json({ error: 'Unauthorized' });
     return;
   }
@@ -27,6 +31,7 @@ export const updateReview = async (request: Request, response: Response): Promis
   }
 
   try {
+    const localUser = await resolveLocalUser(user.sub, token);
     const review = await prisma.review.findUnique({
       where: { id },
     });
@@ -36,7 +41,7 @@ export const updateReview = async (request: Request, response: Response): Promis
       return;
     }
 
-    if (review.userId !== Number(user.sub)) {
+    if (review.userId !== localUser.id) {
       response.status(403).json({ error: 'Forbidden' });
       return;
     }
