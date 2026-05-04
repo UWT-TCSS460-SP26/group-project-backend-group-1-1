@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
 export const addSubjectId = async (request: Request, response: Response): Promise<void> => {
-  const user = request.user
+  const user = request.user;
 
   if (!user?.sub) {
     response.status(401).json({ error: 'Unauthorized' });

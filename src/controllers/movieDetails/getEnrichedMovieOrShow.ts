@@ -15,14 +15,11 @@ export const getEnrichedMovieOrShow = async (
 
   try {
     // 1. Fetch TMDB data
-    const tmdbResponse = await fetch(
-      `https://api.themoviedb.org/3/${mediaType}/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
-        },
-      }
-    );
+    const tmdbResponse = await fetch(`https://api.themoviedb.org/3/${mediaType}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
+      },
+    });
 
     const tmdbData = await tmdbResponse.json();
 
