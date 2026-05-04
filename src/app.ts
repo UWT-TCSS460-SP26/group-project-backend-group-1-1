@@ -16,6 +16,8 @@ import devAuthRouter from './routes/devAuth';
 import { ratingsRouter } from './routes/ratings';
 import { reviewsRouter } from './routes/reviews';
 import { issuesRouter } from './routes/issues';
+import { usersRouter } from './routes/users';
+
 dotenv.config();
 
 const app = express();
@@ -23,6 +25,8 @@ const app = express();
 // Application-level middleware
 app.use(cors());
 app.use(express.json());
+app.use('/users', usersRouter);
+app.use('/details', movieDetailsRouter);
 
 // OpenAPI documentation
 function loadSpec() {

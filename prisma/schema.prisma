@@ -16,6 +16,7 @@ model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
   email     String   @unique
+  subjectId String?  @unique
   firstName String?
   lastName  String?
   role      String   @default("user")
