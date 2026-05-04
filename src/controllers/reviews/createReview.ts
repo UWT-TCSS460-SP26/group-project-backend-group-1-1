@@ -31,9 +31,14 @@ export const createReview = async (request: Request, response: Response): Promis
 
   const { tmdbId, mediaType, title, body } = parsed.data;
 
-  const userId = parseInt(request.user!.sub, 10);
+  if (!request.user?.sub) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  const userId = parseInt(request.user.sub, 10);
   if (isNaN(userId)) {
-    response.status(401).json({ error: 'Invalid user ID' });
+    response.status(401).json({ error: 'Unauthorized' });
     return;
   }
 

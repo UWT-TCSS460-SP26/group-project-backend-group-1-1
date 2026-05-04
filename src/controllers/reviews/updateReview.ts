@@ -1,18 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    sub: string;
-    email: string;
-    role: string;
-  };
-}
-
-export const updateReview = async (
-  request: AuthenticatedRequest,
-  response: Response
-): Promise<void> => {
+export const updateReview = async (request: Request, response: Response): Promise<void> => {
   const id = Number(request.params.id);
   const user = request.user;
   const { title, description } = request.body;

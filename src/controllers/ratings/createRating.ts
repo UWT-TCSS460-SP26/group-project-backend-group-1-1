@@ -2,18 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 import { Prisma } from '../../generated/prisma/client';
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    sub: string;
-    email: string;
-    role: string;
-  };
-}
-
-export const createRating = async (
-  request: AuthenticatedRequest,
-  response: Response
-): Promise<void> => {
+export const createRating = async (request: Request, response: Response): Promise<void> => {
   const { tmdbId, mediaType, score } = request.body;
   const user = request.user;
 
