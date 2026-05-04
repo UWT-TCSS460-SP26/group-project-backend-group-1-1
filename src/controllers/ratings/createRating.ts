@@ -1,12 +1,16 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 import { Prisma } from '../../generated/prisma/client';
+import { resolveLocalUser } from '../../auth/resolveLocalUser';
 
 export const createRating = async (request: Request, response: Response): Promise<void> => {
   const { tmdbId, mediaType, score } = request.body;
   const user = request.user;
 
-  if (!user?.sub) {
+  const authHeader = request.headers.authorization;
+  const token = authHeader?.split(' ')[1];
+
+  if (!token || !user?.sub) {
     response.status(401).json({ error: 'Unauthorized' });
     return;
   }
@@ -26,9 +30,11 @@ export const createRating = async (request: Request, response: Response): Promis
   }
 
   try {
+    const localUser = await resolveLocalUser(user.sub, token);
+
     const rating = await prisma.rating.create({
       data: {
-        userId: Number(user.sub),
+        userId: localUser.id,
         tmdbId,
         mediaType,
         score,
@@ -42,6 +48,8 @@ export const createRating = async (request: Request, response: Response): Promis
       return;
     }
 
+    // eslint-disable-next-line no-console
+    console.error('Create rating error:', error);
     response.status(500).json({ error: 'Failed to create rating' });
   }
 };
