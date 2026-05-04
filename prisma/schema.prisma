@@ -55,3 +55,14 @@ model Review {
   @@index([userId])
   @@index([tmdbId, mediaType])
 }
+
+model Issue {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String
+  stepsToReproduce String?
+  reporterEmail    String?
+  status           String   @default("OPEN")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
