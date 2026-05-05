@@ -19,6 +19,12 @@ The server starts at [https://tcss460-team-1-api.onrender.com](https://tcss460-t
 
 API documentation is at [https://tcss460-team-1-api.onrender.com/api-docs](https://tcss460-team-1-api.onrender.com/api-docs).
 
+## Authentication
+
+This API verifies RS256 JWTs issued by Auth² (`AUTH_ISSUER=https://tcss-460-iam.onrender.com`)
+against its public JWKS. The expected audience for this group is **`group-1-api`** — tokens
+must include this in the `aud` claim or they will be rejected with 401.
+
 ## Scripts
 
 | Command                | Description                       |
