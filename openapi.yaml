@@ -26,10 +26,6 @@ tags:
     description: User-submitted numeric ratings for movies and TV shows
   - name: Reviews
     description: User-submitted text reviews for movies and TV shows
-  - name: Auth
-    description: |
-      Authentication endpoints. The current `/auth/dev-login` is a Sprint 2 stand-in
-      and will be replaced by the real auth provider in Sprint 3.
   - name: Issues
     description: Public bug report submission endpoints
 
@@ -358,59 +354,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /auth/dev-login:
-    post:
-      tags: [Auth]
-      summary: Dev Login (Sprint 2 only)
-      description: |
-        **Sprint 2 stand-in — DO NOT deploy publicly.**
-        Accepts a username, find-or-creates a `User` row with `role='user'`,
-        and returns a signed JWT. Does NOT validate a password.
-        Replaced by the real auth integration in Sprint 3.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  example: alice
-                email:
-                  type: string
-                  format: email
-                  description: Optional. Defaults to `<username>@dev.local`.
-                  example: alice@example.test
-              required: [username]
-      responses:
-        '200':
-          description: JWT for the (possibly newly created) user.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    description: |
-                      Signed JWT. Payload contains `{ sub, email, role, iat, exp }`.
-                      Send as `Authorization: Bearer <token>` to authenticated endpoints.
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                required: [token]
-        '400':
-          description: '`username` is missing or not a string.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: 'Authentication is not configured on the server.'
           content:
             application/json:
               schema:
@@ -940,8 +883,8 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: |
-        Bearer token issued by `POST /auth/dev-login` (dev) or the eventual auth provider.
-        Send as `Authorization: Bearer <token>`.
+        RS256 JWT issued by Auth² (`AUTH_ISSUER`), audience `group-1-api`,
+        verified server-side via JWKS. Send as `Authorization: Bearer <token>`.
   schemas:
     ErrorResponse:
       type: object
