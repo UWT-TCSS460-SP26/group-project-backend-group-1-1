@@ -22,15 +22,25 @@ dotenv.config();
 const app = express();
 
 // Application-level middleware
-const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || [];
+const rawAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS || '';
+const allowedOrigins = rawAllowedOrigins.split(',').map((o) => o.trim());
+
 app.use(
   cors({
     origin: (origin, callback) => {
       // allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+
+      // If allowlist contains *, allow everything
+      if (allowedOrigins.includes('*') || rawAllowedOrigins === '') {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        // eslint-disable-next-line no-console
+        console.error('CORS Error: Origin ' + origin + ' not in allowlist:', allowedOrigins);
         callback(new Error('Not allowed by CORS'));
       }
     },
