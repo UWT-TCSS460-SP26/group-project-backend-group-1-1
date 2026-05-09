@@ -85,7 +85,7 @@ const handleAuthError = (
   next: NextFunction
 ): void => {
   if (err instanceof UnauthorizedError) {
-    response.status(401).json({ error: 'Invalid or missing token' });
+    response.status(401).json({ error: 'Unauthorized' });
     return;
   }
   next(err);
