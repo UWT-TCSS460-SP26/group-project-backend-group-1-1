@@ -3,12 +3,14 @@ import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
 import { Prisma } from '../../generated/prisma/client';
 
-const updateIssueSchema = z.object({
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'WONT_FIX', 'DUPLICATE']).optional(),
-  title: z.string().trim().min(1).optional(),
-  description: z.string().trim().min(1).optional(),
-  stepsToReproduce: z.string().trim().optional(),
-}).strict();
+const updateIssueSchema = z
+  .object({
+    status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'WONT_FIX', 'DUPLICATE']).optional(),
+    title: z.string().trim().min(1).optional(),
+    description: z.string().trim().min(1).optional(),
+    stepsToReproduce: z.string().trim().optional(),
+  })
+  .strict();
 
 /**
  * PATCH /issues/:id
@@ -29,9 +31,9 @@ export const updateIssue = async (request: Request, response: Response): Promise
   // Validate Body
   const result = updateIssueSchema.safeParse(request.body);
   if (!result.success) {
-    response.status(400).json({ 
-      error: 'Invalid update data', 
-      details: result.error.flatten().fieldErrors 
+    response.status(400).json({
+      error: 'Invalid update data',
+      details: result.error.flatten().fieldErrors,
     });
     return;
   }

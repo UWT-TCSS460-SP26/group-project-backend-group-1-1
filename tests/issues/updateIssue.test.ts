@@ -80,9 +80,7 @@ describe('PATCH /issues/:id', () => {
   });
 
   it('returns 401 when no token is provided', async () => {
-    const response = await request(app)
-      .patch('/issues/1')
-      .send({ status: 'RESOLVED' });
+    const response = await request(app).patch('/issues/1').send({ status: 'RESOLVED' });
 
     expect(response.status).toBe(401);
     expect(response.body.error).toBe('Unauthorized');
