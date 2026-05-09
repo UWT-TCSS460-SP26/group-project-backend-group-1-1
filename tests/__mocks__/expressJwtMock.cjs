@@ -19,7 +19,7 @@ module.exports = {
         return next(new UnauthorizedError('Invalid token'));
       }
       next();
-    } catch (err) {
+    } catch {
       if (options?.credentialsRequired === false) {
         return next();
       }
