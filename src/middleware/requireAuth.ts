@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { expressjwt, UnauthorizedError, Request as JwtRequest } from 'express-jwt';
 import { expressJwtSecret, GetVerificationKey } from 'jwks-rsa';
+import { prisma } from '../lib/prisma';
 
 export type Role = 'User' | 'Moderator' | 'Admin' | 'SuperAdmin' | 'Owner';
 
@@ -63,19 +64,35 @@ const verifyJwt: RequestHandler = (request, response, next) => {
 
 const isRole = (value: unknown): value is Role => typeof value === 'string' && value in ROLE_RANK;
 
-const attachUser: RequestHandler = (request, _response, next) => {
+const attachUser: RequestHandler = async (request, _response, next) => {
   const auth = (request as JwtRequest).auth as
     | { sub?: string; email?: string; role?: string; [key: string]: unknown }
     | undefined;
+
   if (auth?.sub) {
-    request.user = {
-      sub: auth.sub,
-      email: auth.email,
-      role: isRole(auth.role) ? auth.role : 'User',
-      raw: auth as Record<string, unknown>,
-    };
+    try {
+      // Look up the user in our local database to see if they have an elevated role.
+      const dbUser = await prisma.user.findUnique({
+        where: { subjectId: auth.sub },
+        select: { role: true },
+      });
+
+      const roleFromDb = dbUser?.role;
+
+      request.user = {
+        sub: auth.sub,
+        email: auth.email,
+        // Source of truth: 1. DB Role, 2. JWT Role, 3. Default 'User'
+        role: isRole(roleFromDb) ? roleFromDb : isRole(auth.role) ? auth.role : 'User',
+        raw: auth as Record<string, unknown>,
+      };
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
   }
-  next();
 };
 
 const handleAuthError = (

@@ -10,6 +10,9 @@ jest.mock('../../src/lib/prisma', () => ({
     review: {
       findMany: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 

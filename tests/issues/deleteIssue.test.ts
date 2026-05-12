@@ -8,6 +8,9 @@ jest.mock('../../src/lib/prisma', () => ({
     issue: {
       delete: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 
