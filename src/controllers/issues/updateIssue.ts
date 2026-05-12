@@ -50,7 +50,7 @@ export const updateIssue = async (request: Request, response: Response): Promise
       }
       response.status(200).json(issue);
       return;
-    } catch (error) {
+    } catch (_error) {
       response.status(500).json({ error: 'Failed to fetch issue' });
       return;
     }
