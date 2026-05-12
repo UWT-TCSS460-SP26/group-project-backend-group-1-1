@@ -1,4 +1,4 @@
-grep -n "paths:" openapi.yamlopenapi: 3.0.3
+openapi: 3.0.3
 info:
   title: TCSS 460 Group Project API
   description: |
@@ -913,6 +913,252 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - Issues
+      summary: List Issues (admin)
+      description: |
+        Admin-gated. Returns a paginated list of bug reports, newest first.
+        Optionally filter by `status`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: 1-based page number.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Page size. Capped at 50.
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [OPEN, IN_PROGRESS, RESOLVED, WONT_FIX, DUPLICATE]
+          description: Filter results to issues with this status. Omit for no filter.
+      responses:
+        '200':
+          description: Paginated issue list (newest first).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueListResponse'
+              example:
+                page: 1
+                limit: 10
+                total: 2
+                totalPages: 1
+                results:
+                  - id: 2
+                    title: 'Search returns 500 on long queries'
+                    description: 'Typing more than 200 characters into search crashes the server.'
+                    stepsToReproduce: 'Paste a 300-char string into the search bar.'
+                    reporterEmail: 'user@example.com'
+                    status: 'OPEN'
+                    createdAt: '2026-05-10T18:24:31.000Z'
+                    updatedAt: '2026-05-10T18:24:31.000Z'
+                  - id: 1
+                    title: 'Poster image 404 for older shows'
+                    description: 'Some legacy TV entries have no poster path.'
+                    stepsToReproduce: null
+                    reporterEmail: null
+                    status: 'RESOLVED'
+                    createdAt: '2026-05-08T12:00:00.000Z'
+                    updatedAt: '2026-05-09T15:00:00.000Z'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is authenticated but not an Admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /issues/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: Numeric issue id.
+    get:
+      tags:
+        - Issues
+      summary: Get Issue (admin)
+      description: Admin-gated. Returns a single bug report by id.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: The requested issue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '400':
+          description: '`id` is not a valid integer.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is authenticated but not an Admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No issue with that id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags:
+        - Issues
+      summary: Update Issue (admin)
+      description: |
+        Admin-gated. Partial update — only fields supplied in the body are written.
+        Sending an empty body returns the issue unchanged. Unknown fields are rejected.
+        Use `status` to walk a report through the workflow:
+        `OPEN → IN_PROGRESS → RESOLVED` (or `WONT_FIX` / `DUPLICATE` as terminal states).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIssueRequest'
+            examples:
+              statusTransition:
+                summary: Move report to IN_PROGRESS
+                value:
+                  status: 'IN_PROGRESS'
+              partialEdit:
+                summary: Fix a typo in the title only
+                value:
+                  title: 'Search returns 500 on long queries (followup)'
+              empty:
+                summary: No-op (returns existing issue unchanged)
+                value: {}
+      responses:
+        '200':
+          description: Updated issue. Same shape as `GET /issues/{id}`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '400':
+          description: |
+            Invalid id or invalid update body (bad status enum, empty string, unknown field).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: 'Invalid update data'
+                details:
+                  status: ['Invalid input']
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is authenticated but not an Admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No issue with that id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Issues
+      summary: Delete Issue (admin)
+      description: Admin-gated. Permanently removes a bug report.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Issue removed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteIssueResponse'
+        '400':
+          description: '`id` is not a valid integer.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is authenticated but not an Admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No issue with that id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   securitySchemes:
@@ -1245,6 +1491,22 @@ components:
           genres,
         ]
 
+    Author:
+      type: object
+      description: Stable identity for the user who authored a review or rating.
+      properties:
+        id:
+          type: integer
+          description: Internal user id. Stable across renames.
+          example: 1
+        displayName:
+          type: string
+          description: |
+            Human-readable name. `"firstName lastName"` when both are set on the user,
+            otherwise the user's `username`.
+          example: 'Alice Smith'
+      required: [id, displayName]
+
     Rating:
       type: object
       description: A user-submitted numeric rating for a TMDB media item.
@@ -1269,13 +1531,15 @@ components:
           type: string
           enum: [movie, tv]
           example: tv
+        author:
+          $ref: '#/components/schemas/Author'
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-      required: [id, userId, score, tmdbId, mediaType]
+      required: [id, userId, score, tmdbId, mediaType, author]
 
     RatingInput:
       type: object
@@ -1343,13 +1607,15 @@ components:
           type: string
           enum: [movie, tv]
           example: tv
+        author:
+          $ref: '#/components/schemas/Author'
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-      required: [id, userId, title, description, tmdbId, mediaType]
+      required: [id, userId, title, description, tmdbId, mediaType, author]
 
     ReviewInput:
       type: object
@@ -1429,22 +1695,28 @@ components:
 
     Issue:
       type: object
+      description: A bug report. Reports start in `OPEN` and move through the admin workflow.
       properties:
         id:
           type: integer
           example: 1
         title:
           type: string
+          example: 'Search returns 500 on long queries'
         description:
           type: string
+          example: 'Typing more than 200 characters into search crashes the server.'
         stepsToReproduce:
           type: string
           nullable: true
+          example: 'Paste a 300-char string into the search bar and submit.'
         reporterEmail:
           type: string
           nullable: true
+          example: 'user@example.com'
         status:
           type: string
+          enum: [OPEN, IN_PROGRESS, RESOLVED, WONT_FIX, DUPLICATE]
           example: 'OPEN'
         createdAt:
           type: string
@@ -1452,6 +1724,60 @@ components:
         updatedAt:
           type: string
           format: date-time
+      required: [id, title, description, status, createdAt, updatedAt]
+
+    IssueListResponse:
+      type: object
+      description: Paginated list of issues from `GET /issues`.
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 42
+        totalPages:
+          type: integer
+          example: 5
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+      required: [page, limit, total, totalPages, results]
+
+    UpdateIssueRequest:
+      type: object
+      description: |
+        Request body for `PATCH /issues/{id}`. All fields optional — only provided
+        fields are written. An empty body is allowed and returns the issue unchanged.
+        Unknown fields are rejected (strict).
+      properties:
+        status:
+          type: string
+          enum: [OPEN, IN_PROGRESS, RESOLVED, WONT_FIX, DUPLICATE]
+          example: 'IN_PROGRESS'
+        title:
+          type: string
+          minLength: 1
+          example: 'Search returns 500 on long queries'
+        description:
+          type: string
+          minLength: 1
+          example: 'Updated repro: only happens on queries with newlines.'
+        stepsToReproduce:
+          type: string
+          example: 'Paste a multi-line string into the search bar and submit.'
+
+    DeleteIssueResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Issue deleted successfully'
+      required: [message]
 
     ZodErrorResponse:
       type: object

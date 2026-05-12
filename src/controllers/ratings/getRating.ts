@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
+import { formatAuthor } from '../../lib/author';
 
 export const getRating = async (request: Request, response: Response): Promise<void> => {
   const id = Number(request.params.id);
@@ -12,6 +13,7 @@ export const getRating = async (request: Request, response: Response): Promise<v
   try {
     const rating = await prisma.rating.findUnique({
       where: { id },
+      include: { user: true },
     });
 
     if (!rating) {
@@ -19,7 +21,8 @@ export const getRating = async (request: Request, response: Response): Promise<v
       return;
     }
 
-    response.status(200).json(rating);
+    const { user, ...rest } = rating;
+    response.status(200).json({ ...rest, author: formatAuthor(user) });
   } catch (_error) {
     response.status(500).json({ error: 'Failed to fetch rating' });
   }

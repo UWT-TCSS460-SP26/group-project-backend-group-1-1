@@ -35,6 +35,12 @@ describe('GET /reviews/me', () => {
         mediaType: 'movie',
         title: 'Good movie',
         description: 'I liked it',
+        user: {
+          id: 7,
+          username: 'alice',
+          firstName: 'Alice',
+          lastName: 'Smith',
+        },
       },
     ];
 
@@ -49,7 +55,17 @@ describe('GET /reviews/me', () => {
       limit: 10,
       total: 1,
       totalPages: 1,
-      results: mockReviews,
+      results: [
+        {
+          id: 1,
+          userId: 7,
+          tmdbId: '550',
+          mediaType: 'movie',
+          title: 'Good movie',
+          description: 'I liked it',
+          author: { id: 7, displayName: 'Alice Smith' },
+        },
+      ],
     });
 
     expect(prisma.review.findMany).toHaveBeenCalledWith({
@@ -57,6 +73,7 @@ describe('GET /reviews/me', () => {
       orderBy: { createdAt: 'desc' },
       skip: 0,
       take: 10,
+      include: { user: true },
     });
   });
 
@@ -76,6 +93,7 @@ describe('GET /reviews/me', () => {
       orderBy: { createdAt: 'desc' },
       skip: 5,
       take: 5,
+      include: { user: true },
     });
   });
 

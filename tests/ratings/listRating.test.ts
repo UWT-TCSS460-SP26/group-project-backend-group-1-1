@@ -11,6 +11,26 @@ const RATINGS = [
     score: 8,
     tmdbId: '1399',
     mediaType: 'tv',
+    user: {
+      id: 1,
+      username: 'alice',
+      firstName: 'Alice',
+      lastName: 'Smith',
+    },
+  },
+];
+
+const RATING_RESPONSES = [
+  {
+    id: 1,
+    userId: 1,
+    score: 8,
+    tmdbId: '1399',
+    mediaType: 'tv',
+    author: {
+      id: 1,
+      displayName: 'Alice Smith',
+    },
   },
 ];
 
@@ -43,7 +63,7 @@ describe('GET /ratings/media/:mediaType/:tmdbId', () => {
       limit: 10,
       total: 1,
       averageScore: 8,
-      results: RATINGS,
+      results: RATING_RESPONSES,
     });
   });
 
@@ -62,6 +82,7 @@ describe('GET /ratings/media/:mediaType/:tmdbId', () => {
       skip: 5,
       take: 5,
       orderBy: { createdAt: 'desc' },
+      include: { user: true },
     });
   });
 
