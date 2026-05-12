@@ -398,6 +398,51 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /ratings/me:
+    get:
+      tags: [Ratings]
+      summary: Get My Ratings
+      description: Returns ratings created by the authenticated user. Uses the JWT subject claim and does not trust a client-supplied user id.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: The authenticated user's ratings.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ratings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rating'
+                required: [ratings]
+              example:
+                ratings:
+                  - id: 1
+                    userId: 1
+                    score: 8
+                    tmdbId: '1399'
+                    mediaType: tv
+                    author:
+                      id: 1
+                      displayName: 'Alice Smith'
+                    createdAt: '2026-05-12T23:28:50.970Z'
+                    updatedAt: '2026-05-12T23:28:50.970Z'
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /ratings/{id}:
     get:
       tags: [Ratings]
@@ -692,6 +737,51 @@ paths:
                 $ref: '#/components/schemas/ReviewsListResponse'
         '400':
           description: Invalid mediaType, tmdbId, or pagination values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /reviews/me:
+    get:
+      tags: [Reviews]
+      summary: Get My Reviews
+      description: Returns reviews written by the authenticated user. Uses the JWT subject claim and does not trust a client-supplied user id.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: The authenticated user's reviews.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reviews:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+                required: [reviews]
+              example:
+                reviews:
+                  - id: 1
+                    userId: 1
+                    title: 'Brilliant'
+                    description: 'A masterpiece of modern cinema.'
+                    tmdbId: '1399'
+                    mediaType: tv
+                    author:
+                      id: 1
+                      displayName: 'Alice Smith'
+                    createdAt: '2026-05-12T23:28:50.970Z'
+                    updatedAt: '2026-05-12T23:28:50.970Z'
+        '401':
+          description: Missing or invalid bearer token.
           content:
             application/json:
               schema:
