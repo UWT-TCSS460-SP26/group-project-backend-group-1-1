@@ -34,6 +34,12 @@ describe('GET /ratings/me', () => {
         tmdbId: '550',
         mediaType: 'movie',
         score: 9,
+        user: {
+          id: 7,
+          username: 'alice',
+          firstName: 'Alice',
+          lastName: 'Smith',
+        },
       },
     ];
 
@@ -48,7 +54,16 @@ describe('GET /ratings/me', () => {
       limit: 10,
       total: 1,
       totalPages: 1,
-      results: mockRatings,
+      results: [
+        {
+          id: 1,
+          userId: 7,
+          tmdbId: '550',
+          mediaType: 'movie',
+          score: 9,
+          author: { id: 7, displayName: 'Alice Smith' },
+        },
+      ],
     });
 
     expect(prisma.rating.findMany).toHaveBeenCalledWith({
@@ -56,6 +71,7 @@ describe('GET /ratings/me', () => {
       orderBy: { createdAt: 'desc' },
       skip: 0,
       take: 10,
+      include: { user: true },
     });
   });
 
@@ -75,6 +91,7 @@ describe('GET /ratings/me', () => {
       orderBy: { createdAt: 'desc' },
       skip: 5,
       take: 5,
+      include: { user: true },
     });
   });
 

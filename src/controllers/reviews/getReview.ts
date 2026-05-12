@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma';
+import { formatAuthor } from '../../lib/author';
 
 const getReviewSchema = z.object({
   id: z.coerce.number().int().positive('Review ID must be a positive integer'),
@@ -23,6 +24,7 @@ export const getReview = async (request: Request, response: Response): Promise<v
   try {
     const review = await prisma.review.findUnique({
       where: { id },
+      include: { user: true },
     });
 
     if (!review) {
@@ -30,7 +32,8 @@ export const getReview = async (request: Request, response: Response): Promise<v
       return;
     }
 
-    response.json(review);
+    const { user, ...rest } = review;
+    response.json({ ...rest, author: formatAuthor(user) });
   } catch (_error) {
     response.status(500).json({ error: 'Failed to fetch review' });
   }

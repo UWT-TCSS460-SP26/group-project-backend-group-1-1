@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 import { resolveLocalUser } from '../../auth/resolveLocalUser';
+import { formatAuthor } from '../../lib/author';
 
 /**
  * GET /reviews/me
@@ -41,6 +42,7 @@ export const getMyReviews = async (request: Request, response: Response): Promis
         },
         skip,
         take: limit,
+        include: { user: true },
       }),
       prisma.review.count({
         where: {
@@ -54,7 +56,10 @@ export const getMyReviews = async (request: Request, response: Response): Promis
       limit,
       total,
       totalPages: Math.ceil(total / limit),
-      results: reviews,
+      results: reviews.map(({ user, ...review }) => ({
+        ...review,
+        author: formatAuthor(user),
+      })),
     });
   } catch (_error) {
     response.status(500).json({

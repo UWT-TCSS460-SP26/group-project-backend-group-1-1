@@ -45,6 +45,12 @@ describe('GET /reviews/media/:mediaType/:tmdbId', () => {
         mediaType: 'movie',
         createdAt: new Date(),
         updatedAt: new Date(),
+        user: {
+          id: 1,
+          username: 'alice',
+          firstName: 'Alice',
+          lastName: 'Smith',
+        },
       },
     ]);
 
@@ -55,5 +61,7 @@ describe('GET /reviews/media/:mediaType/:tmdbId', () => {
     expect(res.body.limit).toBe(10);
     expect(res.body.results).toHaveLength(1);
     expect(res.body.results[0].title).toBe('Great movie');
+    expect(res.body.results[0].author).toEqual({ id: 1, displayName: 'Alice Smith' });
+    expect(res.body.results[0].user).toBeUndefined();
   });
 });

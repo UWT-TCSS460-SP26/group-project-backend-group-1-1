@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
+import { formatAuthor } from '../../lib/author';
 
 export const listRatings = async (request: Request, response: Response): Promise<void> => {
   const mediaType = String(request.params.mediaType);
@@ -25,6 +26,7 @@ export const listRatings = async (request: Request, response: Response): Promise
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
+      include: { user: true },
     });
 
     const aggregate = await prisma.rating.aggregate({
@@ -38,7 +40,10 @@ export const listRatings = async (request: Request, response: Response): Promise
       limit,
       total: aggregate._count,
       averageScore: aggregate._avg.score ?? 0,
-      results: ratings,
+      results: ratings.map(({ user, ...rating }) => ({
+        ...rating,
+        author: formatAuthor(user),
+      })),
     });
   } catch (_error) {
     response.status(500).json({ error: 'Failed to fetch ratings' });

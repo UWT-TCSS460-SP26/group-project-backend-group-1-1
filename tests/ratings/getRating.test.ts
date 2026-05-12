@@ -10,6 +10,21 @@ const RATING = {
   score: 8,
   tmdbId: '1399',
   mediaType: 'tv',
+  user: {
+    id: 1,
+    username: 'alice',
+    firstName: 'Alice',
+    lastName: 'Smith',
+  },
+};
+
+const RATING_RESPONSE = {
+  id: 1,
+  userId: 1,
+  score: 8,
+  tmdbId: '1399',
+  mediaType: 'tv',
+  author: { id: 1, displayName: 'Alice Smith' },
 };
 
 jest.mock('../../src/lib/prisma', () => ({
@@ -31,7 +46,7 @@ describe('GET /ratings/:id', () => {
     const res = await request(app).get('/ratings/1');
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(RATING);
+    expect(res.body).toEqual(RATING_RESPONSE);
   });
 
   it('returns 400 when id is invalid', async () => {

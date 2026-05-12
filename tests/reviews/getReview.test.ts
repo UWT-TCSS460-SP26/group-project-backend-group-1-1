@@ -13,6 +13,24 @@ const MOCK_REVIEW = {
   description: 'First rule is...',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  user: {
+    id: 123,
+    username: 'tylerd',
+    firstName: 'Tyler',
+    lastName: 'Durden',
+  },
+};
+
+const MOCK_REVIEW_RESPONSE = {
+  id: 1,
+  userId: 123,
+  tmdbId: '550',
+  mediaType: 'movie',
+  title: 'Fight Club',
+  description: 'First rule is...',
+  createdAt: MOCK_REVIEW.createdAt,
+  updatedAt: MOCK_REVIEW.updatedAt,
+  author: { id: 123, displayName: 'Tyler Durden' },
 };
 
 jest.mock('../../src/lib/prisma', () => ({
@@ -35,9 +53,10 @@ describe('GET /reviews/:id', () => {
     const res = await request(app).get('/reviews/1');
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(MOCK_REVIEW);
+    expect(res.body).toEqual(MOCK_REVIEW_RESPONSE);
     expect(prisma.review.findUnique).toHaveBeenCalledWith({
       where: { id: 1 },
+      include: { user: true },
     });
   });
 

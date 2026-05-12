@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
+import { formatAuthor } from '../../lib/author';
 
 /**
  * GET /reviews/media/:mediaType/:tmdbId
@@ -39,12 +40,16 @@ export const listReviews = async (request: Request, response: Response): Promise
       },
       skip,
       take: limit,
+      include: { user: true },
     });
 
     response.json({
       page,
       limit,
-      results: reviews,
+      results: reviews.map(({ user, ...review }) => ({
+        ...review,
+        author: formatAuthor(user),
+      })),
     });
   } catch (_error) {
     response.status(500).json({ error: 'Failed to fetch reviews' });
