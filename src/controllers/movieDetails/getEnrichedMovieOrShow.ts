@@ -45,7 +45,7 @@ export const getEnrichedMovieOrShow = async (
       },
       reviews,
     });
-  } catch (error) {
+  } catch (_error) {
     response.status(500).json({ error: 'Failed to fetch enriched data' });
   }
 };
