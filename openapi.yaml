@@ -545,6 +545,180 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /ratings/me/items:
+    get:
+      tags: [Ratings]
+      summary: Get Current User Rated Items
+      description: Returns the authenticated user's ratings enriched with TMDB metadata.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of enriched rated items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    score:
+                      type: integer
+                      example: 5
+                    tmdbId:
+                      type: string
+                      example: '550'
+                    mediaType:
+                      type: string
+                      example: movie
+                    tmdbMissing:
+                      type: boolean
+                      example: false
+                    author:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        displayName:
+                          type: string
+                          example: Harleen Kaur
+                    tmdb:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          example: Fight Club
+        '401':
+          description: Missing or invalid bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to fetch user rated items.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ratings/top-rated:
+    get:
+      tags: [Ratings]
+      summary: Get Top Rated Community Items
+      description: Returns community top-rated movies and TV shows using database aggregation and TMDB enrichment.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 10
+        - name: minCount
+          in: query
+          schema:
+            type: integer
+            example: 2
+      responses:
+        '200':
+          description: Top rated media items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tmdbId:
+                      type: string
+                      example: '550'
+                    mediaType:
+                      type: string
+                      example: movie
+                    tmdbMissing:
+                      type: boolean
+                      example: false
+                    _avg:
+                      type: object
+                      properties:
+                        score:
+                          type: number
+                          example: 4.5
+                    _count:
+                      type: object
+                      properties:
+                        score:
+                          type: integer
+                          example: 10
+                    tmdb:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          example: Fight Club
+        '500':
+          description: Failed to fetch top rated items.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ratings/most-reviewed:
+    get:
+      tags: [Ratings]
+      summary: Get Most Reviewed Community Items
+      description: Returns media items with the highest number of ratings/reviews.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Most reviewed media items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tmdbId:
+                      type: string
+                      example: '550'
+                    mediaType:
+                      type: string
+                      example: movie
+                    tmdbMissing:
+                      type: boolean
+                      example: false
+                    _count:
+                      type: object
+                      properties:
+                        score:
+                          type: integer
+                          example: 25
+                    tmdb:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          example: Fight Club
+        '500':
+          description: Failed to fetch most reviewed items.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /ratings/media/{mediaType}/{tmdbId}:
     get:
