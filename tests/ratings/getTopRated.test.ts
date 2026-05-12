@@ -24,7 +24,6 @@ describe('GET /ratings/top-rated', () => {
   });
 
   it('returns top rated items', async () => {
-
     (prisma.rating.groupBy as jest.Mock).mockResolvedValue([
       {
         tmdbId: '550',

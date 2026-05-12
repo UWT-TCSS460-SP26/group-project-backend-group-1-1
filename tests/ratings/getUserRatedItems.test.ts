@@ -17,11 +17,7 @@ jest.mock('../../src/lib/prisma', () => ({
 
 jest.mock('../../src/middleware/requireAuth', () => ({
   requireAuth: [
-    (
-      request: { user?: { sub: string } },
-      _response: unknown,
-      next: () => void,
-    ) => {
+    (request: { user?: { sub: string } }, _response: unknown, next: () => void) => {
       request.user = {
         sub: 'auth0|123',
       };

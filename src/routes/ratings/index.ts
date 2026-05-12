@@ -18,11 +18,9 @@ router.get('/media/:mediaType/:tmdbId', listRatings);
 router.get('/me/items', requireAuth, getUserRatedItems);
 router.get('/:id', getRating);
 
-
 // Protected writes — ownership check lives inside each handler
 router.post('/', requireAuth, createRating);
 router.put('/:id', requireAuth, updateRating);
 router.delete('/:id', requireAuth, deleteRating);
-
 
 export { router as ratingsRouter };

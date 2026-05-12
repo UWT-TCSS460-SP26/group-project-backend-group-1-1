@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
-export const getUserRatedItems = async (
-  request: Request,
-  response: Response,
-): Promise<void> => {
+export const getUserRatedItems = async (request: Request, response: Response): Promise<void> => {
   try {
     const subjectId = request.user?.sub;
 
@@ -42,7 +39,7 @@ export const getUserRatedItems = async (
                 Authorization: `Bearer ${process.env.API_KEY}`,
                 'Content-Type': 'application/json',
               },
-            },
+            }
           );
 
           if (!tmdbResponse.ok) {
@@ -88,7 +85,7 @@ export const getUserRatedItems = async (
             tmdbMissing: true,
           };
         }
-      }),
+      })
     );
 
     response.status(200).json(enrichedRatings);

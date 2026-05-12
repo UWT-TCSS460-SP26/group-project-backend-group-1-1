@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 
-export const getTopRated = async (
-  request: Request,
-  response: Response,
-): Promise<void> => {
+export const getTopRated = async (request: Request, response: Response): Promise<void> => {
   try {
     const limit = Number(request.query.limit) || 10;
     const minCount = Number(request.query.minCount) || 2;
@@ -42,7 +39,7 @@ export const getTopRated = async (
                 Authorization: `Bearer ${process.env.API_KEY}`,
                 'Content-Type': 'application/json',
               },
-            },
+            }
           );
 
           if (!tmdbResponse.ok) {
@@ -67,7 +64,7 @@ export const getTopRated = async (
             tmdbMissing: true,
           };
         }
-      }),
+      })
     );
 
     response.status(200).json(enrichedResults);
