@@ -20,6 +20,15 @@ export const getIssues = async (request: Request, response: Response): Promise<v
 
   // Filtering logic
   const status = request.query.status as string | undefined;
+  const allowedStatuses = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'WONT_FIX', 'DUPLICATE'];
+
+  if (status && !allowedStatuses.includes(status)) {
+    response
+      .status(400)
+      .json({ error: `Invalid status. Must be one of: ${allowedStatuses.join(', ')}` });
+    return;
+  }
+
   const where = status ? { status } : {};
 
   try {

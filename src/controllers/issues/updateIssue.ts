@@ -9,6 +9,7 @@ const updateIssueSchema = z
     title: z.string().trim().min(1).optional(),
     description: z.string().trim().min(1).optional(),
     stepsToReproduce: z.string().trim().optional(),
+    reporterEmail: z.string().trim().email().or(z.literal('')).nullable().optional(),
   })
   .strict();
 
@@ -32,8 +33,7 @@ export const updateIssue = async (request: Request, response: Response): Promise
   const result = updateIssueSchema.safeParse(request.body);
   if (!result.success) {
     response.status(400).json({
-      error: 'Invalid update data',
-      details: result.error.flatten().fieldErrors,
+      errors: result.error.flatten().fieldErrors,
     });
     return;
   }

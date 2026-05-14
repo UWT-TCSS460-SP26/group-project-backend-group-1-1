@@ -1350,10 +1350,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ZodErrorResponse'
               example:
-                error: 'Invalid update data'
-                details:
+                errors:
                   status: ['Invalid input']
         '401':
           description: Missing or invalid bearer token.
@@ -1603,11 +1602,11 @@ components:
         overview:
           type: string
           example: 'Seven noble families fight for control of the mythical land of Westeros.'
-        posterPath:
+        poster_path:
           type: string
           nullable: true
           example: '/tv-poster.jpg'
-        firstAirDate:
+        first_air_date:
           type: string
           format: date
           example: '2011-04-17'
@@ -1615,10 +1614,10 @@ components:
           type: integer
           nullable: true
           example: 2011
-        originalLanguage:
+        language:
           type: string
           example: en
-      required: [id, title, overview, posterPath, firstAirDate, year, originalLanguage]
+      required: [id, title, overview, poster_path, first_air_date, year, language]
 
     TvSearchResponse:
       type: object
@@ -2034,6 +2033,10 @@ components:
         stepsToReproduce:
           type: string
           example: 'Paste a multi-line string into the search bar and submit.'
+        reporterEmail:
+          type: string
+          nullable: true
+          example: 'user@example.com'
 
     DeleteIssueResponse:
       type: object

@@ -41,10 +41,10 @@ describe('GET /tv/search', () => {
       id: 1399,
       title: 'Game of Thrones',
       overview: 'Seven noble families fight for control of the lands of Westeros...',
-      posterPath: '/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg',
-      firstAirDate: '2011-04-17',
+      poster_path: '/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg',
+      first_air_date: '2011-04-17',
       year: 2011,
-      originalLanguage: 'en',
+      language: 'en',
     });
   });
 

@@ -57,10 +57,10 @@ router.get('/tv/search', async (request: Request, response: Response) => {
       id: show.id,
       title: show.name,
       overview: show.overview,
-      posterPath: show.poster_path,
-      firstAirDate: show.first_air_date,
+      poster_path: show.poster_path,
+      first_air_date: show.first_air_date,
       year: show.first_air_date ? Number(show.first_air_date.split('-')[0]) : null,
-      originalLanguage: show.original_language,
+      language: show.original_language,
     }));
 
     return response.json({

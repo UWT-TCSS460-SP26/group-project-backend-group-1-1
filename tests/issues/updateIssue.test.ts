@@ -69,7 +69,10 @@ describe('PATCH /issues/:id', () => {
       .send({ status: 'INVALID_STATUS' });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid update data');
+    expect(response.body.errors).toBeDefined();
+    // Use a regex to be flexible about the exact wording of the Zod error message
+    // different environments/Zod versions may vary slightly.
+    expect(response.body.errors.status[0]).toMatch(/expected|option.*OPEN.*received.*INVALID_STATUS/i);
   });
 
   it('returns 403 for non-admin user', async () => {
