@@ -9,10 +9,20 @@ import { resolveLocalUser } from '../../auth/resolveLocalUser';
  */
 export const createReview = async (request: Request, response: Response): Promise<void> => {
   const { tmdbId, mediaType, title, body } = request.body;
-  const user = request.user!;
+  const user = request.user;
+
+  if (!user) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
   const authHeader = request.headers.authorization;
-  const token = authHeader?.split(' ')[1]!;
+  const token = authHeader?.split(' ')[1];
+
+  if (!token) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
   try {
     const localUser = await resolveLocalUser(user.sub, token);
@@ -32,8 +42,6 @@ export const createReview = async (request: Request, response: Response): Promis
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       response.status(409).json({ error: 'You have already reviewed this media item' });
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Create review error:', error);
       response.status(500).json({ error: 'Failed to create review' });
     }
   }

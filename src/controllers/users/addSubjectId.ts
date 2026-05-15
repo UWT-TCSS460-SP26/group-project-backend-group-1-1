@@ -15,7 +15,7 @@ export const addSubjectId = async (request: Request, response: Response): Promis
       data: { subjectId: user.sub },
     });
 
-    const { email, ...userWithoutEmail } = updatedUser;
+    const { email: _email, ...userWithoutEmail } = updatedUser;
 
     response.status(200).json(userWithoutEmail);
   } catch {

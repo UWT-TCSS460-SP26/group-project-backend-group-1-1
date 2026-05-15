@@ -36,8 +36,7 @@ export const listReviews = async (request: Request, response: Response): Promise
         author: formatAuthor(user),
       })),
     });
-  } catch (error: unknown) {
-    console.error('List reviews error:', error);
+  } catch (_) {
     response.status(500).json({ error: 'Failed to fetch reviews' });
   }
 };

@@ -53,7 +53,6 @@ function loadSpec() {
   return YAML.parse(specFile);
 }
 app.get('/openapi.json', (_request: Request, response: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return response.json(loadSpec());
 });
 app.use('/api-docs', apiReference({ spec: { url: '/openapi.json' } }));

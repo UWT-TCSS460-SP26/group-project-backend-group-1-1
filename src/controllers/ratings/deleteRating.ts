@@ -4,10 +4,19 @@ import { resolveLocalUser } from '../../auth/resolveLocalUser';
 
 export const deleteRating = async (request: Request, response: Response): Promise<void> => {
   const { id } = request.params as unknown as { id: number };
-  const user = request.user!;
+  const user = request.user;
+  if (!user) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
   const authHeader = request.headers.authorization;
-  const token = authHeader?.split(' ')[1]!;
+  const token = authHeader?.split(' ')[1];
+
+  if (!token) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
   try {
     const localUser = await resolveLocalUser(user.sub, token);
@@ -31,9 +40,7 @@ export const deleteRating = async (request: Request, response: Response): Promis
     });
 
     response.status(204).send();
-  } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('Delete rating error:', error);
+  } catch (_error: unknown) {
     response.status(500).json({ error: 'Failed to delete rating' });
   }
 };

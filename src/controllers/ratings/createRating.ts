@@ -5,10 +5,19 @@ import { resolveLocalUser } from '../../auth/resolveLocalUser';
 
 export const createRating = async (request: Request, response: Response): Promise<void> => {
   const { tmdbId, mediaType, score } = request.body;
-  const user = request.user!;
+  const user = request.user;
+  if (!user) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
   const authHeader = request.headers.authorization;
-  const token = authHeader?.split(' ')[1]!;
+  const token = authHeader?.split(' ')[1];
+
+  if (!token) {
+    response.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
   try {
     const localUser = await resolveLocalUser(user.sub, token);
