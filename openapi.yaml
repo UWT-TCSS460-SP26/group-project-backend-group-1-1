@@ -1433,18 +1433,64 @@ components:
         RS256 JWT issued by Auth² (`AUTH_ISSUER`), audience `group-1-api`,
         verified server-side via JWKS. Send as `Authorization: Bearer <token>`.
   schemas:
-    ErrorResponse:
+    ZodErrorResponse:
       type: object
       description: |
-        Standard error envelope returned on 4xx and 5xx responses.
-        Note: Zod-validated endpoints (`POST /reviews`, `GET /reviews/{id}`)
-        return a `ZodErrorResponse` instead.
+        Error envelope returned by Zod-validated endpoints (e.g., `POST /reviews`).
+        Contains a map of field names to arrays of error messages.
       properties:
-        error:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            title: ['title is required']
+            score: ['Number must be less than or equal to 10']
+      required: [errors]
+
+    UpdateIssueRequest:
+      type: object
+      description: Fields that can be updated in an existing issue.
+      properties:
+        title:
           type: string
-          description: Human-readable description of the error.
-          example: 'Missing required query parameter: query'
-      required: [error]
+          example: 'New title'
+        description:
+          type: string
+          example: 'New description'
+        status:
+          type: string
+          enum: [OPEN, IN_PROGRESS, RESOLVED, WONT_FIX, DUPLICATE]
+          example: 'IN_PROGRESS'
+
+    DeleteIssueResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Issue deleted successfully'
+
+    IssueListResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 2
+        totalPages:
+          type: integer
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
 
     PopularMovieSummary:
       type: object

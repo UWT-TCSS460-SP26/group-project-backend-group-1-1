@@ -1,8 +1,4 @@
-import { Router, Request, Response } from 'express';
-
-// import { prisma } from '../lib/prisma';
-
-const router = Router();
+import { Request, Response } from 'express';
 
 const TMDB_URL = 'https://api.themoviedb.org/3/tv';
 
@@ -27,15 +23,9 @@ interface TmdbTVDetails {
 }
 
 /**
- * GET /tv/:id/details
- *
- * Flagship combined route: TMDB metadata + this community's aggregate
- * rating, recent reviews, and review count in a single response.
- *
- * See movieDetails.ts for response-shape design notes — this route
- * mirrors that shape for TV media.
+ * GET /tv/:id
  */
-router.get('/tv/:id/details', async (request: Request, response: Response) => {
+export const getTVShow = async (request: Request, response: Response) => {
   const id = String(request.params.id);
   const language = (request.query.language as string) || 'en-US';
 
@@ -67,27 +57,6 @@ router.get('/tv/:id/details', async (request: Request, response: Response) => {
 
     const data = (await upstream.json()) as TmdbTVDetails;
 
-    // TODO: replace stub with real prisma aggregation/find.
-    //
-    // const aggregate = await prisma.rating.aggregate({
-    //   where: { tmdbId: id, mediaType: 'tv' },
-    //   _avg: { score: true },
-    //   _count: { score: true },
-    // });
-    // const recentReviews = await prisma.review.findMany({
-    //   where: { tmdbId: id, mediaType: 'tv' },
-    //   orderBy: { createdAt: 'desc' },
-    //   take: 5,
-    //   select: { id: true, title: true, description: true, createdAt: true },
-    // });
-    const community = { averageScore: null as number | null, reviewCount: 0 };
-    const recentReviews: Array<{
-      id: number;
-      title: string;
-      description: string;
-      createdAt: Date;
-    }> = [];
-
     return response.json({
       id: data.id,
       title: data.name,
@@ -101,14 +70,10 @@ router.get('/tv/:id/details', async (request: Request, response: Response) => {
       number_of_episodes: data.number_of_episodes,
       status: data.status,
       genres: data.genres.map((g) => g.name),
-      community,
-      recentReviews,
     });
   } catch (err) {
     return response
       .status(502)
       .json({ error: 'Failed to reach TMDB', detail: (err as Error).message });
   }
-});
-
-export { router as tvDetailsRouter };
+};

@@ -50,7 +50,7 @@ describe('POST /issues', () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('title is required');
+    expect(response.body.errors.title[0]).toBe('Invalid input: expected string, received undefined');
   });
 
   it('returns 400 when description is missing', async () => {
@@ -59,6 +59,6 @@ describe('POST /issues', () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('description is required');
+    expect(response.body.errors.description[0]).toBe('Invalid input: expected string, received undefined');
   });
 });

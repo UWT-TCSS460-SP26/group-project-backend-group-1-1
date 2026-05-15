@@ -3,45 +3,26 @@ import { prisma } from '../../lib/prisma';
 import { resolveLocalUser } from '../../auth/resolveLocalUser';
 
 export const updateReview = async (request: Request, response: Response): Promise<void> => {
-  const id = Number(request.params.id);
-  const user = request.user;
+  const { id } = request.params as unknown as { id: number };
   const { title, description } = request.body;
+  const user = request.user!;
 
   const authHeader = request.headers.authorization;
-  const token = authHeader?.split(' ')[1];
-
-  if (!token || !user?.sub) {
-    response.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
-
-  if (!Number.isInteger(id)) {
-    response.status(400).json({ error: 'Invalid review id' });
-    return;
-  }
-
-  if (title !== undefined && typeof title !== 'string') {
-    response.status(400).json({ error: 'Invalid title' });
-    return;
-  }
-
-  if (description !== undefined && typeof description !== 'string') {
-    response.status(400).json({ error: 'Invalid description' });
-    return;
-  }
+  const token = authHeader?.split(' ')[1]!;
 
   try {
     const localUser = await resolveLocalUser(user.sub, token);
-    const review = await prisma.review.findUnique({
+
+    const existingReview = await prisma.review.findUnique({
       where: { id },
     });
 
-    if (!review) {
+    if (!existingReview) {
       response.status(404).json({ error: 'Review not found' });
       return;
     }
 
-    if (review.userId !== localUser.id) {
+    if (existingReview.userId !== localUser.id) {
       response.status(403).json({ error: 'Forbidden' });
       return;
     }

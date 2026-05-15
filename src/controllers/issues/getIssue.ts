@@ -3,23 +3,14 @@ import { prisma } from '../../lib/prisma';
 
 /**
  * GET /issues/:id
- *
  * Admin-gated: Fetches a single issue by its numeric ID.
- * Returns 404 if the issue doesn't exist, or 400 if the ID is invalid.
  */
 export const getIssue = async (request: Request, response: Response): Promise<void> => {
-  const { id } = request.params;
-
-  // Validate that ID is a number
-  const issueId = parseInt(String(id), 10);
-  if (isNaN(issueId)) {
-    response.status(400).json({ error: 'Invalid issue ID' });
-    return;
-  }
+  const { id } = request.params as unknown as { id: number };
 
   try {
     const issue = await prisma.issue.findUnique({
-      where: { id: issueId },
+      where: { id },
     });
 
     if (!issue) {
@@ -29,7 +20,6 @@ export const getIssue = async (request: Request, response: Response): Promise<vo
 
     response.status(200).json(issue);
   } catch (_error) {
-    // Log error if needed, for now just return 500
     response.status(500).json({ error: 'Failed to fetch issue' });
   }
 };

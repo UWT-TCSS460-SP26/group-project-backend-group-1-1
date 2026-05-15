@@ -3,15 +3,10 @@ import cors from 'cors';
 import fs from 'fs';
 import YAML from 'yaml';
 import { apiReference } from '@scalar/express-api-reference';
-import { moviesPopularRouter } from './routes/moviesPopular';
-import { tvPopularRouter } from './routes/tvPopular';
-import { tvSearchRouter } from './routes/tvSearch';
-import { moviesSearchRouter } from './routes/moviesSearch';
 import dotenv from 'dotenv';
-import { movieIDRouter } from './routes/movieID';
-import { tvIDRouter } from './routes/tvID';
+import { moviesRouter } from './routes/movies';
+import { tvRouter } from './routes/tv';
 import { movieDetailsRouter } from './routes/movieDetails';
-import { tvDetailsRouter } from './routes/tvDetails';
 import { ratingsRouter } from './routes/ratings';
 import { reviewsRouter } from './routes/reviews';
 import { issuesRouter } from './routes/issues';
@@ -58,7 +53,8 @@ function loadSpec() {
   return YAML.parse(specFile);
 }
 app.get('/openapi.json', (_request: Request, response: Response) => {
-  response.json(loadSpec());
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return response.json(loadSpec());
 });
 app.use('/api-docs', apiReference({ spec: { url: '/openapi.json' } }));
 
@@ -68,14 +64,8 @@ app.get('/health', (_request: Request, response: Response) => {
 });
 
 // MARK: Routes
-app.use('/', moviesPopularRouter);
-app.use(tvPopularRouter);
-app.use(tvSearchRouter);
-app.use(moviesSearchRouter);
-app.use(movieIDRouter);
-app.use(tvIDRouter);
-app.use(movieDetailsRouter);
-app.use(tvDetailsRouter);
+app.use('/movies', moviesRouter);
+app.use('/tv', tvRouter);
 app.use('/ratings', ratingsRouter);
 app.use('/reviews', reviewsRouter);
 app.use('/issues', issuesRouter);

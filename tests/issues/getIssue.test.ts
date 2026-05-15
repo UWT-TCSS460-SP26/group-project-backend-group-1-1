@@ -59,7 +59,7 @@ describe('GET /issues/:id', () => {
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid issue ID');
+    expect(response.body.errors.id).toBeDefined();
   });
 
   it('returns 403 for non-admin user', async () => {

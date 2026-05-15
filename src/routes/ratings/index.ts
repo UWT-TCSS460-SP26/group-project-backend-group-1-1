@@ -9,23 +9,40 @@ import { getMyRatings } from '../../controllers/ratings/getMyRatings';
 import { getUserRatedItems } from '../../controllers/ratings/getUserRatedItems';
 import { getTopRated } from '../../controllers/ratings/getTopRated';
 import { getMostReviewed } from '../../controllers/ratings/getMostReviewed';
+import { validate } from '../../middleware/validate';
+import { numericIdSchema } from '../../lib/schemas/common';
+import {
+  createRatingSchema,
+  updateRatingSchema,
+  listRatingReviewQuerySchema,
+  mediaItemParamsSchema,
+} from '../../lib/schemas/ratingReviewSchemas';
 
 const router = Router();
 
 // Public reads
 router.get('/top-rated', getTopRated);
 router.get('/most-reviewed', getMostReviewed);
-router.get('/media/:mediaType/:tmdbId', listRatings);
+router.get(
+  '/media/:mediaType/:tmdbId',
+  validate({ params: mediaItemParamsSchema, query: listRatingReviewQuerySchema }),
+  listRatings
+);
 
 // Authenticated self route — must be before /:id
 router.get('/me', requireAuth, getMyRatings);
 
 router.get('/me/items', requireAuth, getUserRatedItems);
-router.get('/:id', getRating);
+router.get('/:id', validate({ params: numericIdSchema }), getRating);
 
 // Protected writes
-router.post('/', requireAuth, createRating);
-router.put('/:id', requireAuth, updateRating);
-router.delete('/:id', requireAuth, deleteRating);
+router.post('/', requireAuth, validate({ body: createRatingSchema }), createRating);
+router.put(
+  '/:id',
+  requireAuth,
+  validate({ params: numericIdSchema, body: updateRatingSchema }),
+  updateRating
+);
+router.delete('/:id', requireAuth, validate({ params: numericIdSchema }), deleteRating);
 
 export { router as ratingsRouter };

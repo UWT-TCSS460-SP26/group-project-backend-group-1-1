@@ -1,17 +1,12 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response } from 'express';
 
-const router = Router();
-
-// Base TMDB endpoint for TV details
 const TMDB_URL = 'https://api.themoviedb.org/3/tv';
 
-// Genre type
 interface TmdbGenre {
   id: number;
   name: string;
 }
 
-// TV details shape from TMDB
 interface TmdbTVDetails {
   id: number;
   name: string;
@@ -28,11 +23,9 @@ interface TmdbTVDetails {
 }
 
 /**
- * GET /tv/:id
- *
- * Fetches detailed TV show information from TMDB
+ * GET /tv/:id/details
  */
-router.get('/tv/:id', async (request: Request, response: Response) => {
+export const getTVDetails = async (request: Request, response: Response) => {
   const id = String(request.params.id);
   const language = (request.query.language as string) || 'en-US';
 
@@ -64,6 +57,14 @@ router.get('/tv/:id', async (request: Request, response: Response) => {
 
     const data = (await upstream.json()) as TmdbTVDetails;
 
+    const community = { averageScore: null as number | null, reviewCount: 0 };
+    const recentReviews: Array<{
+      id: number;
+      title: string;
+      description: string;
+      createdAt: Date;
+    }> = [];
+
     return response.json({
       id: data.id,
       title: data.name,
@@ -77,12 +78,12 @@ router.get('/tv/:id', async (request: Request, response: Response) => {
       number_of_episodes: data.number_of_episodes,
       status: data.status,
       genres: data.genres.map((g) => g.name),
+      community,
+      recentReviews,
     });
   } catch (err) {
     return response
       .status(502)
       .json({ error: 'Failed to reach TMDB', detail: (err as Error).message });
   }
-});
-
-export { router as tvIDRouter };
+};

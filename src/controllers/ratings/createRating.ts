@@ -5,29 +5,10 @@ import { resolveLocalUser } from '../../auth/resolveLocalUser';
 
 export const createRating = async (request: Request, response: Response): Promise<void> => {
   const { tmdbId, mediaType, score } = request.body;
-  const user = request.user;
+  const user = request.user!;
 
   const authHeader = request.headers.authorization;
-  const token = authHeader?.split(' ')[1];
-
-  if (!token || !user?.sub) {
-    response.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
-
-  if (
-    typeof tmdbId !== 'string' ||
-    !['movie', 'tv'].includes(mediaType) ||
-    !Number.isInteger(score)
-  ) {
-    response.status(400).json({ error: 'Invalid rating fields' });
-    return;
-  }
-
-  if (score < 0 || score > 10) {
-    response.status(400).json({ error: 'Score must be between 0 and 10' });
-    return;
-  }
+  const token = authHeader?.split(' ')[1]!;
 
   try {
     const localUser = await resolveLocalUser(user.sub, token);

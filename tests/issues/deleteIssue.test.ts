@@ -48,9 +48,7 @@ describe('DELETE /issues/:id', () => {
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({
-      error: 'Invalid issue ID',
-    });
+    expect(response.body.errors.id).toBeDefined();
   });
 
   it('returns 403 for non-admin users', async () => {

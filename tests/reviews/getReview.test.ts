@@ -80,7 +80,7 @@ describe('GET /reviews/:id', () => {
     const res = await request(app).get('/reviews/-5');
 
     expect(res.status).toBe(400);
-    expect(res.body.errors.id).toContain('Review ID must be a positive integer');
+    expect(res.body.errors.id).toContain('Too small: expected number to be >0');
   });
 
   it('returns 500 when database fetch fails', async () => {

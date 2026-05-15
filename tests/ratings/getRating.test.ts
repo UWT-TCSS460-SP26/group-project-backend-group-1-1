@@ -53,7 +53,7 @@ describe('GET /ratings/:id', () => {
     const res = await request(app).get('/ratings/not-a-number');
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/invalid rating id/i);
+    expect(res.body.errors.id).toBeDefined();
   });
 
   it('returns 404 when rating is not found', async () => {
@@ -62,7 +62,7 @@ describe('GET /ratings/:id', () => {
     const res = await request(app).get('/ratings/999');
 
     expect(res.status).toBe(404);
-    expect(res.body.error).toMatch(/rating not found/i);
+    expect(res.body.error).toBe('Rating not found');
   });
 
   it('returns 500 when Prisma fails', async () => {
@@ -71,6 +71,6 @@ describe('GET /ratings/:id', () => {
     const res = await request(app).get('/ratings/1');
 
     expect(res.status).toBe(500);
-    expect(res.body.error).toMatch(/failed to fetch rating/i);
+    expect(res.body.error).toBe('Failed to fetch rating');
   });
 });

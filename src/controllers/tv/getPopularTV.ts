@@ -1,12 +1,10 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response } from 'express';
 
-const router = Router();
-
-const TMDB_URL = 'https://api.themoviedb.org/3/search/tv';
+const TMDB_URL = 'https://api.themoviedb.org/3/discover/tv';
 
 interface TmdbTV {
   id: number;
-  name: string;
+  original_name: string;
   overview: string;
   poster_path: string | null;
   first_air_date: string;
@@ -17,14 +15,12 @@ interface TmdbResponse {
   results: TmdbTV[];
 }
 
-router.get('/tv/search', async (request: Request, response: Response) => {
-  const query = (request.query.query as string)?.trim();
+/**
+ * GET /tv/popular
+ */
+export const getPopularTV = async (request: Request, response: Response) => {
   const language = (request.query.language as string) || 'en-US';
   const page = (request.query.page as string) || '1';
-
-  if (!query) {
-    return response.status(400).json({ error: 'Query parameter is required' });
-  }
 
   const token = process.env['API-KEY'];
   if (!token) {
@@ -32,8 +28,8 @@ router.get('/tv/search', async (request: Request, response: Response) => {
   }
 
   const url = new URL(TMDB_URL);
-  url.searchParams.set('query', query);
   url.searchParams.set('include_adult', 'false');
+  url.searchParams.set('sort_by', 'popularity.desc');
   url.searchParams.set('language', language);
   url.searchParams.set('page', page);
 
@@ -53,27 +49,19 @@ router.get('/tv/search', async (request: Request, response: Response) => {
 
     const data = (await upstream.json()) as TmdbResponse;
 
-    const shows = data.results.map((show) => ({
-      id: show.id,
-      title: show.name,
-      overview: show.overview,
-      poster_path: show.poster_path,
-      first_air_date: show.first_air_date,
-      year: show.first_air_date ? Number(show.first_air_date.split('-')[0]) : null,
-      language: show.original_language,
+    const shows = data.results.map((s) => ({
+      id: s.id,
+      title: s.original_name,
+      overview: s.overview,
+      poster_path: s.poster_path,
+      first_air_date: s.first_air_date,
+      language: s.original_language,
     }));
 
-    return response.json({
-      query,
-      language,
-      page: Number(page),
-      results: shows,
-    });
+    return response.json({ language, page: Number(page), results: shows });
   } catch (err) {
     return response
       .status(502)
       .json({ error: 'Failed to reach TMDB', detail: (err as Error).message });
   }
-});
-
-export { router as tvSearchRouter };
+};
