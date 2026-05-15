@@ -8,7 +8,7 @@ import { formatAuthor } from '../../lib/author';
  */
 export const listReviews = async (request: Request, response: Response): Promise<void> => {
   const { mediaType, tmdbId } = request.params;
-  
+
   // Cast query parameters to numbers safely
   const page = Number(request.query.page) || 1;
   const limit = Number(request.query.limit) || 10;

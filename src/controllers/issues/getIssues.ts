@@ -9,7 +9,7 @@ export const getIssues = async (request: Request, response: Response): Promise<v
   const page = Number(request.query.page) || 1;
   const limit = Number(request.query.limit) || 10;
   const status = request.query.status as string | undefined;
-  
+
   const skip = (page - 1) * limit;
 
   const where = status ? { status } : {};
