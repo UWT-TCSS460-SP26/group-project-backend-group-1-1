@@ -28,6 +28,10 @@ tags:
     description: User-submitted text reviews for movies and TV shows
   - name: Issues
     description: Public bug report submission endpoints
+  - name: Users
+    description: User profile and authentication endpoints
+  - name: Details
+    description: Enriched media details combining TMDB and local data
 
 paths:
   /health:
@@ -53,12 +57,12 @@ paths:
       summary: Popular Movies
       description: |
         Returns the most popular movies, sorted by popularity descending.
-        Proxies TMDB's `/discover/movie` endpoint.
+        Proxies TMDB's /discover/movie endpoint.
       parameters:
         - name: language
           in: query
           required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          description: BCP-47 language tag (e.g. en-US, es-ES, ja-JP).
           schema:
             type: string
             default: en-US
@@ -79,7 +83,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PopularMoviesResponse'
         '500':
-          description: TMDB API key not configured on the server.
+          description: Server error or configuration issue.
           content:
             application/json:
               schema:
@@ -96,8 +100,8 @@ paths:
       tags: [Movies]
       summary: Search Movies
       description: |
-        Searches for movies by title. Requires the `query` parameter.
-        Proxies TMDB's `/search/movie` endpoint.
+        Searches for movies by title. Requires the query parameter.
+        Proxies TMDB's /search/movie endpoint.
       parameters:
         - name: query
           in: query
@@ -109,7 +113,7 @@ paths:
         - name: language
           in: query
           required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          description: BCP-47 language tag.
           schema:
             type: string
             default: en-US
@@ -136,7 +140,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: TMDB API key not configured on the server.
+          description: Server error or configuration issue.
           content:
             application/json:
               schema:
@@ -154,7 +158,7 @@ paths:
       summary: Movie Details
       description: |
         Returns detailed information for a specific movie by TMDB ID.
-        Proxies TMDB's `/movie/{id}` endpoint.
+        Proxies TMDB's /movie/{id} endpoint.
       parameters:
         - name: id
           in: path
@@ -166,7 +170,7 @@ paths:
         - name: language
           in: query
           required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          description: BCP-47 language tag.
           schema:
             type: string
             default: en-US
@@ -191,7 +195,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: TMDB API key not configured on the server.
+          description: Server error or configuration issue.
           content:
             application/json:
               schema:
@@ -209,12 +213,12 @@ paths:
       summary: Popular TV Shows
       description: |
         Returns the most popular TV shows, sorted by popularity descending.
-        Proxies TMDB's `/discover/tv` endpoint.
+        Proxies TMDB's /discover/tv endpoint.
       parameters:
         - name: language
           in: query
           required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          description: BCP-47 language tag.
           schema:
             type: string
             default: en-US
@@ -235,7 +239,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PopularTvResponse'
         '500':
-          description: TMDB API key not configured on the server.
+          description: Server error or configuration issue.
           content:
             application/json:
               schema:
@@ -252,8 +256,8 @@ paths:
       tags: [TV]
       summary: Search TV Shows
       description: |
-        Searches for TV shows by title. Requires the `query` parameter.
-        Proxies TMDB's `/search/tv` endpoint.
+        Searches for TV shows by title. Requires the query parameter.
+        Proxies TMDB's /search/tv endpoint.
       parameters:
         - name: query
           in: query
@@ -265,7 +269,7 @@ paths:
         - name: language
           in: query
           required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          description: BCP-47 language tag.
           schema:
             type: string
             default: en-US
@@ -292,7 +296,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: TMDB API key not configured on the server.
+          description: Server error or configuration issue.
           content:
             application/json:
               schema:
@@ -307,10 +311,10 @@ paths:
   /tv/{id}:
     get:
       tags: [TV]
-      summary: TV Show Details
+      summary: TV Show Info
       description: |
-        Returns detailed information for a specific TV show by TMDB ID.
-        Proxies TMDB's `/tv/{id}` endpoint.
+        Returns basic information for a specific TV show by TMDB ID.
+        Proxies TMDB's /tv/{id} endpoint.
       parameters:
         - name: id
           in: path
@@ -322,14 +326,14 @@ paths:
         - name: language
           in: query
           required: false
-          description: BCP-47 language tag (e.g. `en-US`, `es-ES`, `ja-JP`).
+          description: BCP-47 language tag.
           schema:
             type: string
             default: en-US
             example: en-US
       responses:
         '200':
-          description: Detailed TV show information.
+          description: Basic TV show information.
           content:
             application/json:
               schema:
@@ -347,13 +351,62 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: TMDB API key not configured on the server.
+          description: Server error or configuration issue.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '502':
           description: Upstream TMDB unreachable or returned an invalid body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tv/{id}/details:
+    get:
+      tags: [TV]
+      summary: Detailed TV Show Info
+      description: |
+        Returns comprehensive information for a specific TV show, including community
+        averages and recent reviews.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TMDB TV show ID.
+          schema:
+            type: integer
+            example: 1399
+        - name: language
+          in: query
+          required: false
+          description: BCP-47 language tag.
+          schema:
+            type: string
+            default: en-US
+            example: en-US
+      responses:
+        '200':
+          description: Detailed TV show information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TvDetailsEnriched'
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: TV show not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -402,34 +455,36 @@ paths:
     get:
       tags: [Ratings]
       summary: Get My Ratings
-      description: Returns ratings created by the authenticated user. Uses the JWT subject claim and does not trust a client-supplied user id.
+      description: Returns paginated ratings created by the authenticated user. Uses the JWT subject claim.
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
       responses:
         '200':
           description: The authenticated user's ratings.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  ratings:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Rating'
-                required: [ratings]
-              example:
-                ratings:
-                  - id: 1
-                    userId: 1
-                    score: 8
-                    tmdbId: '1399'
-                    mediaType: tv
-                    author:
-                      id: 1
-                      displayName: 'Alice Smith'
-                    createdAt: '2026-05-12T23:28:50.970Z'
-                    updatedAt: '2026-05-12T23:28:50.970Z'
+                $ref: '#/components/schemas/MyRatingsResponse'
+        '400':
+          description: Invalid pagination values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Missing or invalid bearer token.
           content:
@@ -590,6 +645,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /ratings/me/items:
     get:
       tags: [Ratings]
@@ -826,7 +882,7 @@ paths:
       summary: Create Review
       description: |
         Creates a text review for a movie or TV show, owned by the authenticated user.
-        A user can only review a given (mediaType, tmdbId) once — duplicates return 409.
+        A user can only review a given (mediaType, tmdbId) once -- duplicates return 409.
       security:
         - bearerAuth: []
       requestBody:
@@ -843,7 +899,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
         '400':
-          description: 'Invalid review fields. Returns a `{ errors: { fieldErrors } }` envelope from Zod validation.'
+          description: |
+            Invalid review fields. Returns a { errors: { fieldErrors } } envelope.
           content:
             application/json:
               schema:
@@ -921,39 +978,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /reviews/me:
     get:
       tags: [Reviews]
       summary: Get My Reviews
-      description: Returns reviews written by the authenticated user. Uses the JWT subject claim and does not trust a client-supplied user id.
+      description: Returns paginated reviews written by the authenticated user. Uses the JWT subject claim.
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
       responses:
         '200':
           description: The authenticated user's reviews.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  reviews:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Review'
-                required: [reviews]
-              example:
-                reviews:
-                  - id: 1
-                    userId: 1
-                    title: 'Brilliant'
-                    description: 'A masterpiece of modern cinema.'
-                    tmdbId: '1399'
-                    mediaType: tv
-                    author:
-                      id: 1
-                      displayName: 'Alice Smith'
-                    createdAt: '2026-05-12T23:28:50.970Z'
-                    updatedAt: '2026-05-12T23:28:50.970Z'
+                $ref: '#/components/schemas/MyReviewsResponse'
+        '400':
+          description: Invalid pagination values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Missing or invalid bearer token.
           content:
@@ -988,7 +1047,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
         '400':
-          description: 'Invalid review id. Returns a `{ errors: { fieldErrors } }` envelope from Zod validation.'
+          description: |
+            Invalid review id. Returns a { errors: { fieldErrors } } envelope.
           content:
             application/json:
               schema:
@@ -1064,7 +1124,7 @@ paths:
     delete:
       tags: [Reviews]
       summary: Delete Review
-      description: Deletes a review. Allowed for the review's owner or any user with the `admin` role.
+      description: Deletes a review. Allowed for the review's owner or any user with the admin role.
       security:
         - bearerAuth: []
       parameters:
@@ -1107,25 +1167,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /users/add-subject-id:
     post:
-      summary: Link authenticated user to subjectId
-      tags:
-        - Users
+      tags: [Users]
+      summary: Link Auth User to SubjectId
+      description: |
+        Synchronizes the JWT sub claim to the local database user record.
+        Required for stable cross-device identity.
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Subject ID added successfully
+          description: Subject ID added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
         '401':
-          description: Unauthorized
+          description: Missing or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: Failed to add subjectId
+          description: Database update failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /details/{mediaType}/{id}/enriched:
     get:
-      summary: Get enriched movie or TV show data
-      tags:
-        - Details
+      tags: [Details]
+      summary: Get Enriched Media Data
+      description: |
+        Combines upstream TMDB data with local aggregate ratings and reviews.
       parameters:
         - name: mediaType
           in: path
@@ -1138,18 +1215,30 @@ paths:
           required: true
           schema:
             type: string
+            example: '550'
       responses:
         '200':
-          description: Combined TMDB, ratings, and reviews data
+          description: Combined TMDB, ratings, and reviews data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichedMediaResponse'
         '400':
-          description: Invalid media type
+          description: Invalid media type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: Failed to fetch enriched data
+          description: Upstream or database error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /issues:
     post:
-      tags:
-        - Issues
+      tags: [Issues]
       summary: Create Issue
       description: Public bug report submission. No authentication required.
       requestBody:
@@ -1178,12 +1267,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     get:
-      tags:
-        - Issues
+      tags: [Issues]
       summary: List Issues (admin)
       description: |
         Admin-gated. Returns a paginated list of bug reports, newest first.
-        Optionally filter by `status`.
+        Optionally filter by status.
       security:
         - bearerAuth: []
       parameters:
@@ -1222,19 +1310,19 @@ paths:
                 totalPages: 1
                 results:
                   - id: 2
-                    title: 'Search returns 500 on long queries'
-                    description: 'Typing more than 200 characters into search crashes the server.'
-                    stepsToReproduce: 'Paste a 300-char string into the search bar.'
-                    reporterEmail: 'user@example.com'
-                    status: 'OPEN'
+                    title: Search returns 500 on long queries
+                    description: Typing more than 200 characters into search crashes the server.
+                    stepsToReproduce: Paste a 300-char string into the search bar.
+                    reporterEmail: user@example.com
+                    status: OPEN
                     createdAt: '2026-05-10T18:24:31.000Z'
                     updatedAt: '2026-05-10T18:24:31.000Z'
                   - id: 1
-                    title: 'Poster image 404 for older shows'
-                    description: 'Some legacy TV entries have no poster path.'
+                    title: Poster image 404 for older shows
+                    description: Some legacy TV entries have no poster path.
                     stepsToReproduce: null
                     reporterEmail: null
-                    status: 'RESOLVED'
+                    status: RESOLVED
                     createdAt: '2026-05-08T12:00:00.000Z'
                     updatedAt: '2026-05-09T15:00:00.000Z'
         '401':
@@ -1265,8 +1353,7 @@ paths:
           type: integer
         description: Numeric issue id.
     get:
-      tags:
-        - Issues
+      tags: [Issues]
       summary: Get Issue (admin)
       description: Admin-gated. Returns a single bug report by id.
       security:
@@ -1279,7 +1366,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Issue'
         '400':
-          description: '`id` is not a valid integer.'
+          description: id is not a valid integer.
           content:
             application/json:
               schema:
@@ -1309,14 +1396,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     patch:
-      tags:
-        - Issues
+      tags: [Issues]
       summary: Update Issue (admin)
       description: |
-        Admin-gated. Partial update — only fields supplied in the body are written.
+        Admin-gated. Partial update -- only fields supplied in the body are written.
         Sending an empty body returns the issue unchanged. Unknown fields are rejected.
-        Use `status` to walk a report through the workflow:
-        `OPEN → IN_PROGRESS → RESOLVED` (or `WONT_FIX` / `DUPLICATE` as terminal states).
+        Use status to walk a report through the workflow:
+        OPEN -> IN_PROGRESS -> RESOLVED (or WONT_FIX / DUPLICATE as terminal states).
       security:
         - bearerAuth: []
       requestBody:
@@ -1329,17 +1415,17 @@ paths:
               statusTransition:
                 summary: Move report to IN_PROGRESS
                 value:
-                  status: 'IN_PROGRESS'
+                  status: IN_PROGRESS
               partialEdit:
                 summary: Fix a typo in the title only
                 value:
-                  title: 'Search returns 500 on long queries (followup)'
+                  title: Search returns 500 on long queries (followup)
               empty:
                 summary: No-op (returns existing issue unchanged)
                 value: {}
       responses:
         '200':
-          description: Updated issue. Same shape as `GET /issues/{id}`.
+          description: Updated issue. Same shape as GET /issues/{id}.
           content:
             application/json:
               schema:
@@ -1350,11 +1436,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ZodErrorResponse'
               example:
-                error: 'Invalid update data'
-                details:
-                  status: ['Invalid input']
+                errors:
+                  status: [Invalid input]
         '401':
           description: Missing or invalid bearer token.
           content:
@@ -1380,8 +1465,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     delete:
-      tags:
-        - Issues
+      tags: [Issues]
       summary: Delete Issue (admin)
       description: Admin-gated. Permanently removes a bug report.
       security:
@@ -1394,7 +1478,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeleteIssueResponse'
         '400':
-          description: '`id` is not a valid integer.'
+          description: id is not a valid integer.
           content:
             application/json:
               schema:
@@ -1431,26 +1515,39 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: |
-        RS256 JWT issued by Auth² (`AUTH_ISSUER`), audience `group-1-api`,
-        verified server-side via JWKS. Send as `Authorization: Bearer <token>`.
+        RS256 JWT issued by Auth² (AUTH_ISSUER), audience group-1-api,
+        verified server-side via JWKS. Send as Authorization: Bearer <token>.
   schemas:
     ErrorResponse:
       type: object
-      description: |
-        Standard error envelope returned on 4xx and 5xx responses.
-        Note: Zod-validated endpoints (`POST /reviews`, `GET /reviews/{id}`)
-        return a `ZodErrorResponse` instead.
       properties:
         error:
           type: string
-          description: Human-readable description of the error.
-          example: 'Missing required query parameter: query'
+          example: Internal Server Error
+        detail:
+          type: string
+          example: Optional diagnostic information
       required: [error]
+
+    ZodErrorResponse:
+      type: object
+      description: |
+        Error envelope returned by Zod-validated endpoints (e.g., POST /reviews).
+        Contains a map of field names to arrays of error messages.
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Map of field names to arrays of error messages
+      required: [errors]
 
     PopularMovieSummary:
       type: object
       description: |
-        Trimmed movie shape returned by `GET /movies/popular`.
+        Trimmed movie shape returned by GET /movies/popular.
         Maps upstream TMDB field names to our public names.
       properties:
         id:
@@ -1459,17 +1556,17 @@ components:
           example: 640146
         title:
           type: string
-          description: Movie title (mapped from upstream `original_title`).
+          description: Movie title (mapped from upstream original_title).
           example: 'Ant-Man and the Wasp: Quantumania'
         overview:
           type: string
           description: Short plot synopsis.
-          example: 'Super-Hero partners Scott Lang and Hope van Dyne...'
+          example: Super-Hero partners Scott Lang and Hope van Dyne...
         poster_path:
           type: string
           nullable: true
-          description: Relative poster image path. Prepend `https://image.tmdb.org/t/p/w500` for a full URL.
-          example: '/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg'
+          description: Relative poster image path. Prepend https://image.tmdb.org/t/p/w500 for a full URL.
+          example: /ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg
         release_date:
           type: string
           format: date
@@ -1477,13 +1574,13 @@ components:
           example: '2023-02-15'
         language:
           type: string
-          description: Original language code (mapped from upstream `original_language`).
+          description: Original language code (mapped from upstream original_language).
           example: en
       required: [id, title, overview, poster_path, release_date, language]
 
     PopularMoviesResponse:
       type: object
-      description: Envelope returned by `GET /movies/popular`.
+      description: Envelope returned by GET /movies/popular.
       properties:
         language:
           type: string
@@ -1501,21 +1598,21 @@ components:
 
     MovieSearchResult:
       type: object
-      description: Summary movie shape returned by `GET /movies/search`.
+      description: Summary movie shape returned by GET /movies/search.
       properties:
         id:
           type: integer
           example: 550
         title:
           type: string
-          example: 'Fight Club'
+          example: Fight Club
         overview:
           type: string
-          example: 'An insomniac office worker and a devil-may-care soap maker...'
+          example: An insomniac office worker and a devil-may-care soap maker...
         poster_path:
           type: string
           nullable: true
-          example: '/i8M6qh39uJVvP9w5ub-h0qMjFk5.jpg'
+          example: /i8M6qh39uJVvP9w5ub-h0qMjFk5.jpg
         release_date:
           type: string
           format: date
@@ -1527,7 +1624,7 @@ components:
 
     MovieSearchResponse:
       type: object
-      description: Envelope returned by `GET /movies/search`.
+      description: Envelope returned by GET /movies/search.
       properties:
         query:
           type: string
@@ -1546,36 +1643,36 @@ components:
 
     PopularTvSummary:
       type: object
-      description: Trimmed TV show shape returned by `GET /tv/popular`.
+      description: Trimmed TV show shape returned by GET /tv/popular.
       properties:
         id:
           type: integer
           example: 1399
         title:
           type: string
-          description: TV show name (mapped from upstream `original_name`).
-          example: 'Game of Thrones'
+          description: TV show name (mapped from upstream original_name).
+          example: Game of Thrones
         overview:
           type: string
-          example: 'Seven noble families fight for control of the lands of Westeros...'
+          example: Seven noble families fight for control of the lands of Westeros...
         poster_path:
           type: string
           nullable: true
-          description: Relative poster image path. Prepend `https://image.tmdb.org/t/p/w500` for a full URL.
-          example: '/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg'
+          description: Relative poster image path. Prepend https://image.tmdb.org/t/p/w500 for a full URL.
+          example: /u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg
         first_air_date:
           type: string
           format: date
           example: '2011-04-17'
         language:
           type: string
-          description: Original language code (mapped from upstream `original_language`).
+          description: Original language code (mapped from upstream original_language).
           example: en
       required: [id, title, overview, poster_path, first_air_date, language]
 
     PopularTvResponse:
       type: object
-      description: Envelope returned by `GET /tv/popular`.
+      description: Envelope returned by GET /tv/popular.
       properties:
         language:
           type: string
@@ -1592,22 +1689,22 @@ components:
 
     TvSearchResult:
       type: object
-      description: Summary TV show shape returned by `GET /tv/search`.
+      description: Summary TV show shape returned by GET /tv/search.
       properties:
         id:
           type: integer
           example: 1399
         title:
           type: string
-          example: 'Game of Thrones'
+          example: Game of Thrones
         overview:
           type: string
-          example: 'Seven noble families fight for control of the mythical land of Westeros.'
-        posterPath:
+          example: Seven noble families fight for control of the mythical land of Westeros.
+        poster_path:
           type: string
           nullable: true
-          example: '/tv-poster.jpg'
-        firstAirDate:
+          example: /tv-poster.jpg
+        first_air_date:
           type: string
           format: date
           example: '2011-04-17'
@@ -1615,14 +1712,14 @@ components:
           type: integer
           nullable: true
           example: 2011
-        originalLanguage:
+        language:
           type: string
           example: en
-      required: [id, title, overview, posterPath, firstAirDate, year, originalLanguage]
+      required: [id, title, overview, poster_path, first_air_date, year, language]
 
     TvSearchResponse:
       type: object
-      description: Envelope returned by `GET /tv/search`.
+      description: Envelope returned by GET /tv/search.
       properties:
         query:
           type: string
@@ -1641,25 +1738,25 @@ components:
 
     MovieDetailsResponse:
       type: object
-      description: Detailed movie information returned by `GET /movies/{id}`.
+      description: Detailed movie information returned by GET /movies/{id}.
       properties:
         id:
           type: integer
           example: 550
         title:
           type: string
-          example: 'Fight Club'
+          example: Fight Club
         overview:
           type: string
-          example: 'A ticking-time-bomb insomniac and a slippery soap salesman...'
+          example: A ticking-time-bomb insomniac and a slippery soap salesman...
         poster_path:
           type: string
           nullable: true
-          example: '/jSziioSwPVrOy9Yow3XhWIBDjq1.jpg'
+          example: /jSziioSwPVrOy9Yow3XhWIBDjq1.jpg
         backdrop_path:
           type: string
           nullable: true
-          example: '/c6OLXfKAk5BKeR6broC8pYiCquX.jpg'
+          example: /c6OLXfKAk5BKeR6broC8pYiCquX.jpg
         release_date:
           type: string
           format: date
@@ -1678,7 +1775,7 @@ components:
           type: array
           items:
             type: string
-          example: ['Drama', 'Thriller']
+          example: [Drama, Thriller]
       required:
         [
           id,
@@ -1695,25 +1792,25 @@ components:
 
     TvDetailsResponse:
       type: object
-      description: Detailed TV show information returned by `GET /tv/{id}`.
+      description: Detailed TV show information returned by GET /tv/{id}.
       properties:
         id:
           type: integer
           example: 1399
         title:
           type: string
-          example: 'Game of Thrones'
+          example: Game of Thrones
         overview:
           type: string
-          example: 'Seven noble families fight for control of the mythical land of Westeros.'
+          example: Seven noble families fight for control of the mythical land of Westeros.
         poster_path:
           type: string
           nullable: true
-          example: '/tv-poster.jpg'
+          example: /tv-poster.jpg
         backdrop_path:
           type: string
           nullable: true
-          example: '/tv-backdrop.jpg'
+          example: /tv-backdrop.jpg
         first_air_date:
           type: string
           format: date
@@ -1733,12 +1830,12 @@ components:
           example: 73
         status:
           type: string
-          example: 'Ended'
+          example: Ended
         genres:
           type: array
           items:
             type: string
-          example: ['Sci-Fi & Fantasy']
+          example: [Sci-Fi & Fantasy]
       required:
         [
           id,
@@ -1755,6 +1852,36 @@ components:
           genres,
         ]
 
+    TvDetailsEnriched:
+      allOf:
+        - $ref: '#/components/schemas/TvDetailsResponse'
+        - type: object
+          properties:
+            community:
+              type: object
+              properties:
+                averageScore:
+                  type: number
+                  nullable: true
+                  example: 8.2
+                reviewCount:
+                  type: integer
+                  example: 5
+            recentReviews:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+
     Author:
       type: object
       description: Stable identity for the user who authored a review or rating.
@@ -1766,9 +1893,9 @@ components:
         displayName:
           type: string
           description: |
-            Human-readable name. `"firstName lastName"` when both are set on the user,
-            otherwise the user's `username`.
-          example: 'Alice Smith'
+            Human-readable name. "firstName lastName" when both are set on the user,
+            otherwise the user's username.
+          example: Alice Smith
       required: [id, displayName]
 
     Rating:
@@ -1807,7 +1934,7 @@ components:
 
     RatingInput:
       type: object
-      description: Request body for `POST /ratings`.
+      description: Request body for POST /ratings.
       properties:
         tmdbId:
           type: string
@@ -1840,13 +1967,30 @@ components:
         averageScore:
           type: number
           format: float
-          description: Average score across all ratings for this media item. `0` when there are no ratings.
+          description: Average score across all ratings for this media item. 0 when there are no ratings.
           example: 8
         results:
           type: array
           items:
             $ref: '#/components/schemas/Rating'
-            required: [page, limit, total, averageScore, results]
+      required: [page, limit, total, averageScore, results]
+
+    MyRatingsResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rating'
+      required: [page, limit, total, totalPages, results]
 
     Review:
       type: object
@@ -1860,10 +2004,10 @@ components:
           example: 1
         title:
           type: string
-          example: 'Brilliant'
+          example: Brilliant
         description:
           type: string
-          example: 'A masterpiece of modern cinema.'
+          example: A masterpiece of modern cinema.
         tmdbId:
           type: string
           example: '1399'
@@ -1884,9 +2028,9 @@ components:
     ReviewInput:
       type: object
       description: |
-        Request body for `POST /reviews`.
-        `title` is optional — if omitted, the server generates `Review of {tmdbId}`.
-        `body` is stored as the review's `description` field.
+        Request body for POST /reviews.
+        title is optional -- if omitted, the server generates Review of {tmdbId}.
+        body is stored as the review's description field.
       properties:
         tmdbId:
           type: string
@@ -1898,31 +2042,31 @@ components:
           example: tv
         title:
           type: string
-          example: 'Brilliant'
+          example: Brilliant
         body:
           type: string
           minLength: 1
           maxLength: 5000
-          description: The review text. Stored as `description` on the response.
-          example: 'A masterpiece of modern cinema.'
+          description: The review text. Stored as description on the response.
+          example: A masterpiece of modern cinema.
       required: [tmdbId, mediaType, body]
 
     ReviewUpdateInput:
       type: object
       description: |
-        Request body for `PUT /reviews/{id}`. All fields optional —
+        Request body for PUT /reviews/{id}. All fields optional --
         only provided fields are written.
       properties:
         title:
           type: string
-          example: 'Brilliant (revised)'
+          example: Brilliant (revised)
         description:
           type: string
-          example: 'On rewatch, even better than I remembered.'
+          example: On rewatch, even better than I remembered.
 
     ReviewsListResponse:
       type: object
-      description: Paginated reviews list for `GET /reviews/media/{mediaType}/{tmdbId}`.
+      description: Paginated reviews list for GET /reviews/media/{mediaType}/{tmdbId}.
       properties:
         page:
           type: integer
@@ -1936,6 +2080,23 @@ components:
             $ref: '#/components/schemas/Review'
       required: [page, limit, results]
 
+    MyReviewsResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+      required: [page, limit, total, totalPages, results]
+
     CreateIssueRequest:
       type: object
       required:
@@ -1944,44 +2105,44 @@ components:
       properties:
         title:
           type: string
-          example: 'Bug title'
+          example: Bug title
         description:
           type: string
-          example: 'Something broke'
+          example: Something broke
         stepsToReproduce:
           type: string
           nullable: true
-          example: 'Click button'
+          example: Click button
         reporterEmail:
           type: string
           nullable: true
-          example: 'user@email.com'
+          example: user@email.com
 
     Issue:
       type: object
-      description: A bug report. Reports start in `OPEN` and move through the admin workflow.
+      description: A bug report. Reports start in OPEN and move through the admin workflow.
       properties:
         id:
           type: integer
           example: 1
         title:
           type: string
-          example: 'Search returns 500 on long queries'
+          example: Search returns 500 on long queries
         description:
           type: string
-          example: 'Typing more than 200 characters into search crashes the server.'
+          example: Typing more than 200 characters into search crashes the server.
         stepsToReproduce:
           type: string
           nullable: true
-          example: 'Paste a 300-char string into the search bar and submit.'
+          example: Paste a 300-char string into the search bar and submit.
         reporterEmail:
           type: string
           nullable: true
-          example: 'user@example.com'
+          example: user@example.com
         status:
           type: string
           enum: [OPEN, IN_PROGRESS, RESOLVED, WONT_FIX, DUPLICATE]
-          example: 'OPEN'
+          example: OPEN
         createdAt:
           type: string
           format: date-time
@@ -1992,7 +2153,7 @@ components:
 
     IssueListResponse:
       type: object
-      description: Paginated list of issues from `GET /issues`.
+      description: Paginated list of issues from GET /issues.
       properties:
         page:
           type: integer
@@ -2015,48 +2176,79 @@ components:
     UpdateIssueRequest:
       type: object
       description: |
-        Request body for `PATCH /issues/{id}`. All fields optional — only provided
+        Request body for PATCH /issues/{id}. All fields optional -- only provided
         fields are written. An empty body is allowed and returns the issue unchanged.
         Unknown fields are rejected (strict).
       properties:
         status:
           type: string
           enum: [OPEN, IN_PROGRESS, RESOLVED, WONT_FIX, DUPLICATE]
-          example: 'IN_PROGRESS'
+          example: IN_PROGRESS
         title:
           type: string
           minLength: 1
-          example: 'Search returns 500 on long queries'
+          example: Search returns 500 on long queries
         description:
           type: string
           minLength: 1
           example: 'Updated repro: only happens on queries with newlines.'
         stepsToReproduce:
           type: string
-          example: 'Paste a multi-line string into the search bar and submit.'
+          example: Paste a multi-line string into the search bar and submit.
+        reporterEmail:
+          type: string
+          nullable: true
+          example: user@example.com
 
     DeleteIssueResponse:
       type: object
       properties:
         message:
           type: string
-          example: 'Issue deleted successfully'
+          example: Issue deleted successfully
       required: [message]
 
-    ZodErrorResponse:
+    UserResponse:
       type: object
-      description: |
-        Error envelope returned when Zod validation fails (currently `POST /reviews`
-        and `GET /reviews/{id}`). Each key in `errors` is a field name and maps to
-        an array of human-readable error messages.
       properties:
-        errors:
+        id:
+          type: integer
+        username:
+          type: string
+        subjectId:
+          type: string
+          nullable: true
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    EnrichedMediaResponse:
+      type: object
+      properties:
+        tmdb:
           type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
-          example:
-            body: ['Review body cannot be empty']
-            mediaType: ['Invalid input']
-      required: [errors]
+          description: Raw metadata from TMDB.
+        ratings:
+          type: object
+          properties:
+            average:
+              type: number
+              example: 4.5
+            count:
+              type: integer
+              example: 10
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'

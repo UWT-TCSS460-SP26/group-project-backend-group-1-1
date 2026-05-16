@@ -25,7 +25,7 @@ describe('GET /reviews/media/:mediaType/:tmdbId', () => {
     const res = await request(app).get('/reviews/media/invalid/123');
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Invalid media type');
+    expect(res.body.errors.mediaType).toBeDefined();
   });
 
   it('returns 404 if tmdbId is missing because route does not match', async () => {

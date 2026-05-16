@@ -82,7 +82,8 @@ describe('POST /ratings', () => {
       .send({ tmdbId: '1399' });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/invalid rating fields/i);
+    expect(res.body.errors.mediaType).toBeDefined();
+    expect(res.body.errors.score).toBeDefined();
   });
 
   it('returns 400 for invalid score', async () => {
@@ -92,7 +93,7 @@ describe('POST /ratings', () => {
       .send({ ...validRating, score: 11 });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/score must be between 0 and 10/i);
+    expect(res.body.errors.score).toContain('Too big: expected number to be <=10');
   });
 
   it('returns 401 if Authorization header is missing', async () => {

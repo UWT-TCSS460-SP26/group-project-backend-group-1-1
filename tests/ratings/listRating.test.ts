@@ -90,7 +90,7 @@ describe('GET /ratings/media/:mediaType/:tmdbId', () => {
     const res = await request(app).get('/ratings/media/book/1399');
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/invalid mediaType/i);
+    expect(res.body.errors.mediaType).toBeDefined();
   });
 
   it('returns 500 when Prisma fails', async () => {
@@ -99,6 +99,6 @@ describe('GET /ratings/media/:mediaType/:tmdbId', () => {
     const res = await request(app).get('/ratings/media/tv/1399');
 
     expect(res.status).toBe(500);
-    expect(res.body.error).toMatch(/failed to fetch ratings/i);
+    expect(res.body.error).toBe('Failed to fetch ratings');
   });
 });

@@ -1,41 +1,41 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 import { resolveLocalUser } from '../../auth/resolveLocalUser';
+import { hasRoleAtLeast } from '../../middleware/requireAuth';
 
-/**
- * DELETE /reviews/:id
- * Authenticated + ownership. Deletes a review the caller owns.
- */
 export const deleteReview = async (request: Request, response: Response): Promise<void> => {
-  const id = Number(request.params.id);
+  const { id } = request.params as unknown as { id: number };
   const user = request.user;
-
-  const authHeader = request.headers.authorization;
-  const token = authHeader?.split(' ')[1];
-
-  if (!token || !user?.sub) {
+  if (!user) {
     response.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
-  if (!Number.isInteger(id)) {
-    response.status(400).json({ error: 'Invalid review id' });
+  const authHeader = request.headers.authorization;
+  const token = authHeader?.split(' ')[1];
+
+  if (!token) {
+    response.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
   try {
     const localUser = await resolveLocalUser(user.sub, token);
-    const review = await prisma.review.findUnique({
+
+    const existingReview = await prisma.review.findUnique({
       where: { id },
     });
 
-    if (!review) {
+    if (!existingReview) {
       response.status(404).json({ error: 'Review not found' });
       return;
     }
 
-    // Only owner OR admin can delete
-    if (review.userId !== localUser.id && user.role !== 'Admin') {
+    // Allowed if owner OR admin
+    const isOwner = existingReview.userId === localUser.id;
+    const isAdmin = hasRoleAtLeast(user.role, 'Admin');
+
+    if (!isOwner && !isAdmin) {
       response.status(403).json({ error: 'Forbidden' });
       return;
     }
@@ -45,7 +45,7 @@ export const deleteReview = async (request: Request, response: Response): Promis
     });
 
     response.status(204).send();
-  } catch (_error) {
+  } catch (_error: unknown) {
     response.status(500).json({ error: 'Failed to delete review' });
   }
 };

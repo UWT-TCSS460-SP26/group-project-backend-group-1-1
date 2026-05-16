@@ -3,17 +3,14 @@ import { prisma } from '../../lib/prisma';
 import { formatAuthor } from '../../lib/author';
 
 export const getRating = async (request: Request, response: Response): Promise<void> => {
-  const id = Number(request.params.id);
-
-  if (!Number.isInteger(id)) {
-    response.status(400).json({ error: 'Invalid rating id' });
-    return;
-  }
+  const { id } = request.params as unknown as { id: number };
 
   try {
     const rating = await prisma.rating.findUnique({
       where: { id },
-      include: { user: true },
+      include: {
+        user: true,
+      },
     });
 
     if (!rating) {
@@ -22,8 +19,14 @@ export const getRating = async (request: Request, response: Response): Promise<v
     }
 
     const { user, ...rest } = rating;
-    response.status(200).json({ ...rest, author: formatAuthor(user) });
-  } catch (_error) {
+
+    response.status(200).json({
+      ...rest,
+      author: formatAuthor(user),
+    });
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
+    console.error('Get rating error:', error);
     response.status(500).json({ error: 'Failed to fetch rating' });
   }
 };

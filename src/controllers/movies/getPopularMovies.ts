@@ -1,30 +1,26 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response } from 'express';
 
-const router = Router();
+const TMDB_URL = 'https://api.themoviedb.org/3/discover/movie';
 
-const TMDB_URL = 'https://api.themoviedb.org/3/search/tv';
-
-interface TmdbTV {
+interface TmdbMovie {
   id: number;
-  name: string;
+  original_title: string;
   overview: string;
   poster_path: string | null;
-  first_air_date: string;
+  release_date: string;
   original_language: string;
 }
 
 interface TmdbResponse {
-  results: TmdbTV[];
+  results: TmdbMovie[];
 }
 
-router.get('/tv/search', async (request: Request, response: Response) => {
-  const query = (request.query.query as string)?.trim();
+/**
+ * GET /movies/popular
+ */
+export const getPopularMovies = async (request: Request, response: Response) => {
   const language = (request.query.language as string) || 'en-US';
   const page = (request.query.page as string) || '1';
-
-  if (!query) {
-    return response.status(400).json({ error: 'Query parameter is required' });
-  }
 
   const token = process.env['API-KEY'];
   if (!token) {
@@ -32,8 +28,9 @@ router.get('/tv/search', async (request: Request, response: Response) => {
   }
 
   const url = new URL(TMDB_URL);
-  url.searchParams.set('query', query);
   url.searchParams.set('include_adult', 'false');
+  url.searchParams.set('include_video', 'false');
+  url.searchParams.set('sort_by', 'popularity.desc');
   url.searchParams.set('language', language);
   url.searchParams.set('page', page);
 
@@ -53,27 +50,19 @@ router.get('/tv/search', async (request: Request, response: Response) => {
 
     const data = (await upstream.json()) as TmdbResponse;
 
-    const shows = data.results.map((show) => ({
-      id: show.id,
-      title: show.name,
-      overview: show.overview,
-      posterPath: show.poster_path,
-      firstAirDate: show.first_air_date,
-      year: show.first_air_date ? Number(show.first_air_date.split('-')[0]) : null,
-      originalLanguage: show.original_language,
+    const movies = data.results.map((m) => ({
+      id: m.id,
+      title: m.original_title,
+      overview: m.overview,
+      poster_path: m.poster_path,
+      release_date: m.release_date,
+      language: m.original_language,
     }));
 
-    return response.json({
-      query,
-      language,
-      page: Number(page),
-      results: shows,
-    });
+    return response.json({ language, page: Number(page), results: movies });
   } catch (err) {
     return response
       .status(502)
       .json({ error: 'Failed to reach TMDB', detail: (err as Error).message });
   }
-});
-
-export { router as tvSearchRouter };
+};

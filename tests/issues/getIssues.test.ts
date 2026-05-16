@@ -46,11 +46,11 @@ describe('GET /issues', () => {
     (prisma.issue.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.issue.count as jest.Mock).mockResolvedValue(0);
 
-    await request(app).get('/issues?status=CLOSED').set('Authorization', `Bearer ${adminToken}`);
+    await request(app).get('/issues?status=RESOLVED').set('Authorization', `Bearer ${adminToken}`);
 
     expect(prisma.issue.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { status: 'CLOSED' },
+        where: { status: 'RESOLVED' },
       })
     );
   });

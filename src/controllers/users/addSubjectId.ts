@@ -15,7 +15,9 @@ export const addSubjectId = async (request: Request, response: Response): Promis
       data: { subjectId: user.sub },
     });
 
-    response.status(200).json(updatedUser);
+    const { email: _email, ...userWithoutEmail } = updatedUser;
+
+    response.status(200).json(userWithoutEmail);
   } catch {
     response.status(500).json({ error: 'Failed to add subjectId' });
   }

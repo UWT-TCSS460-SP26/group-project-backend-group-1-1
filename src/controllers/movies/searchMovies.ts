@@ -1,6 +1,4 @@
-import { Router, Request, Response } from 'express';
-
-const router = Router();
+import { Request, Response } from 'express';
 
 const TMDB_URL = 'https://api.themoviedb.org/3/search/movie';
 
@@ -19,11 +17,8 @@ interface TmdbResponse {
 
 /**
  * GET /movies/search
- * Example:
- * /movies/search?query=batman
- * /movies/search?query=batman&language=en-US&page=1
  */
-router.get('/movies/search', async (request: Request, response: Response) => {
+export const searchMovies = async (request: Request, response: Response) => {
   const query = (request.query.query as string)?.trim();
   const language = (request.query.language as string) || 'en-US';
   const page = (request.query.page as string) || '1';
@@ -79,6 +74,4 @@ router.get('/movies/search', async (request: Request, response: Response) => {
       .status(502)
       .json({ error: 'Failed to reach TMDB', detail: (err as Error).message });
   }
-});
-
-export { router as moviesSearchRouter };
+};
