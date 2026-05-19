@@ -40,3 +40,9 @@ must include this in the `aud` claim or they will be rejected with 401.
 ## Deployed URL
 
 [https://tcss460-team-1-api.onrender.com](https://tcss460-team-1-api.onrender.com)
+
+## Bug Tracker Frontend
+
+Report bugs here:
+
+https://group-1-frontend.onrender.com/ 
