@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Title · Movie Hub</title>
+    <link
+      rel="stylesheet"
+      href="/static/styles.css"
+    />
+    <script
+      src="/static/common.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <main>
+      <div
+        id="hero"
+        class="hero"
+      >
+        <div class="poster"></div>
+        <div>
+          <div
+            id="status"
+            class="muted"
+          >
+            Loading…
+          </div>
+          <h1 id="title-name"></h1>
+          <div
+            id="badges"
+            class="badges"
+          ></div>
+          <p
+            id="overview"
+            class="overview"
+          ></p>
+        </div>
+      </div>
+
+      <h2>
+        Ratings
+        <span
+          class="muted"
+          id="ratings-summary"
+        ></span>
+      </h2>
+      <div
+        id="rating-write"
+        class="write-card"
+        style="display: none"
+      >
+        <div
+          id="rating-mine-note"
+          class="muted"
+          style="margin-bottom: 8px"
+        ></div>
+        <div class="row">
+          <label for="rating-score">Your score</label>
+          <input
+            id="rating-score"
+            type="number"
+            min="0"
+            max="10"
+            step="1"
+            value="8"
+          />
+          <button
+            id="rating-submit"
+            onclick="submitRating()"
+          >
+            Post rating
+          </button>
+          <button
+            id="rating-delete"
+            class="danger"
+            style="display: none"
+            onclick="deleteMyRating()"
+          >
+            Delete my rating
+          </button>
+        </div>
+      </div>
+      <div
+        id="ratings-list"
+        class="entry-list"
+      ></div>
+
+      <h2>Reviews</h2>
+      <div
+        id="review-write"
+        class="write-card"
+        style="display: none"
+      >
+        <div
+          id="review-mine-note"
+          class="muted"
+          style="margin-bottom: 8px"
+        ></div>
+        <div class="row">
+          <label for="review-title">Title (optional)</label>
+          <input
+            id="review-title"
+            type="text"
+            style="flex: 1"
+          />
+        </div>
+        <div class="gap"></div>
+        <label for="review-body">Review</label>
+        <textarea
+          id="review-body"
+          placeholder="What did you think? (max 5000 characters)"
+        ></textarea>
+        <div class="gap"></div>
+        <div class="row">
+          <button
+            id="review-submit"
+            onclick="submitReview()"
+          >
+            Post review
+          </button>
+          <button
+            id="review-clear"
+            class="secondary"
+            onclick="clearReviewForm()"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+      <div
+        id="reviews-list"
+        class="entry-list"
+      ></div>
+    </main>
+
+    <script>
+      let ctx = { type: 'movie', id: '', user: null, myRating: null, myReview: null };
+
+      window.addEventListener('DOMContentLoaded', async () => {
+        // Path is /title/:type/:id
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        ctx.type = parts[1] === 'tv' ? 'tv' : 'movie';
+        ctx.id = parts[2] || '';
+        injectHeader();
+        ctx.user = currentUser();
+
+        if (!ctx.id) {
+          document.getElementById('status').innerHTML =
+            '<span class="error">Missing title id in URL.</span>';
+          return;
+        }
+
+        // Show the auth-only write cards only when signed in
+        if (ctx.user && !ctx.user.expired) {
+          document.getElementById('rating-write').style.display = '';
+          document.getElementById('review-write').style.display = '';
+        }
+
+        await Promise.all([loadTitle(), loadRatings(), loadReviews()]);
+      });
+
+      async function loadTitle() {
+        try {
+          const path = ctx.type === 'tv' ? '/tv/' + ctx.id + '/details' : '/movies/' + ctx.id;
+          const data = await api('GET', path);
+          renderHero(data);
+          document.getElementById('status').textContent = '';
+        } catch (err) {
+          document.getElementById('status').innerHTML =
+            '<span class="error">Could not load title: ' + escapeHtml(err.message) + '</span>';
+        }
+      }
+
+      function renderHero(data) {
+        document.title = (data.title || 'Title') + ' · Movie Hub';
+        document.getElementById('title-name').textContent = data.title || 'Untitled';
+        document.getElementById('overview').textContent = data.overview || '';
+        const poster = posterUrl(data.poster_path);
+        const heroPoster = document.querySelector('#hero .poster');
+        if (poster) heroPoster.style.backgroundImage = "url('" + poster + "')";
+        else heroPoster.textContent = 'No image';
+
+        const badges = document.getElementById('badges');
+        badges.innerHTML = '';
+        const addBadge = (text, cls) => {
+          if (!text) return;
+          const b = document.createElement('span');
+          b.className = 'badge' + (cls ? ' ' + cls : '');
+          b.textContent = text;
+          badges.appendChild(b);
+        };
+        const year = fmtYear(data.release_date || data.first_air_date);
+        addBadge(year);
+        if (typeof data.rating === 'number') addBadge('★ ' + data.rating.toFixed(1), 'star');
+        if (ctx.type === 'movie' && data.runtime) addBadge(data.runtime + ' min');
+        if (ctx.type === 'tv' && data.number_of_seasons) {
+          addBadge(data.number_of_seasons + ' season' + (data.number_of_seasons === 1 ? '' : 's'));
+        }
+        if (data.status) addBadge(data.status);
+        (data.genres || []).forEach((g) => addBadge(g));
+      }
+
+      async function loadRatings() {
+        const listEl = document.getElementById('ratings-list');
+        const summaryEl = document.getElementById('ratings-summary');
+        listEl.innerHTML = '<div class="empty">Loading ratings…</div>';
+        try {
+          const data = await api('GET', '/ratings/media/' + ctx.type + '/' + ctx.id);
+          const items = data.results || [];
+          summaryEl.textContent = data.total
+            ? `· ${data.total} rating${data.total === 1 ? '' : 's'} · avg ${Number(data.averageScore).toFixed(1)}`
+            : '';
+          if (items.length === 0) {
+            listEl.innerHTML = '<div class="empty">No ratings yet.</div>';
+          } else {
+            listEl.innerHTML = '';
+            for (const r of items) listEl.appendChild(renderRating(r));
+          }
+          updateMyRatingUi(items);
+        } catch (err) {
+          listEl.innerHTML =
+            '<div class="error">Could not load ratings: ' + escapeHtml(err.message) + '</div>';
+        }
+      }
+
+      function renderRating(r) {
+        const div = document.createElement('div');
+        div.className = 'entry';
+        const isMine =
+          ctx.user && r.author && (r.author.sub === ctx.user.sub || r.userId === ctx.user.sub);
+        div.innerHTML = `
+          <div class="head">
+            <span class="author">${escapeHtml(fmtAuthor(r.author))}${isMine ? ' <span class="muted">(you)</span>' : ''}</span>
+            <span><span class="score">${escapeHtml(String(r.score ?? '?'))} / 10</span>
+              <span class="when"> · ${escapeHtml(fmtDate(r.createdAt))}</span>
+            </span>
+          </div>
+        `;
+        return div;
+      }
+
+      function updateMyRatingUi(items) {
+        if (!ctx.user) return;
+        const mine = items.find(
+          (r) => r.author && (r.author.sub === ctx.user.sub || r.userId === ctx.user.sub)
+        );
+        ctx.myRating = mine || null;
+        const note = document.getElementById('rating-mine-note');
+        const delBtn = document.getElementById('rating-delete');
+        const submitBtn = document.getElementById('rating-submit');
+        if (mine) {
+          note.textContent = 'You rated this ' + mine.score + '/10 — submit again to update.';
+          document.getElementById('rating-score').value = mine.score;
+          delBtn.style.display = '';
+          submitBtn.textContent = 'Update rating';
+        } else {
+          note.textContent = '';
+          delBtn.style.display = 'none';
+          submitBtn.textContent = 'Post rating';
+        }
+      }
+
+      async function submitRating() {
+        if (!ctx.user) return toast('Sign in first.', 'err');
+        const score = Number(document.getElementById('rating-score').value);
+        if (!Number.isInteger(score) || score < 0 || score > 10) {
+          return toast('Score must be an integer 0–10.', 'err');
+        }
+        const btn = document.getElementById('rating-submit');
+        btn.disabled = true;
+        try {
+          if (ctx.myRating) {
+            await api('PUT', '/ratings/' + ctx.myRating.id, { score });
+            toast('Rating updated.', 'ok');
+          } else {
+            await api('POST', '/ratings', {
+              tmdbId: Number(ctx.id),
+              mediaType: ctx.type,
+              score,
+            });
+            toast('Rating posted.', 'ok');
+          }
+          await loadRatings();
+        } catch (err) {
+          toast(err.message, 'err');
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      async function deleteMyRating() {
+        if (!ctx.myRating) return;
+        if (!confirm('Delete your rating?')) return;
+        try {
+          await api('DELETE', '/ratings/' + ctx.myRating.id);
+          toast('Rating deleted.', 'ok');
+          await loadRatings();
+        } catch (err) {
+          toast(err.message, 'err');
+        }
+      }
+
+      async function loadReviews() {
+        const listEl = document.getElementById('reviews-list');
+        listEl.innerHTML = '<div class="empty">Loading reviews…</div>';
+        try {
+          const data = await api('GET', '/reviews/media/' + ctx.type + '/' + ctx.id);
+          const items = data.results || [];
+          if (items.length === 0) {
+            listEl.innerHTML = '<div class="empty">No reviews yet.</div>';
+          } else {
+            listEl.innerHTML = '';
+            for (const r of items) listEl.appendChild(renderReview(r));
+          }
+          updateMyReviewUi(items);
+        } catch (err) {
+          listEl.innerHTML =
+            '<div class="error">Could not load reviews: ' + escapeHtml(err.message) + '</div>';
+        }
+      }
+
+      function renderReview(r) {
+        const div = document.createElement('div');
+        div.className = 'entry';
+        const isMine =
+          ctx.user && r.author && (r.author.sub === ctx.user.sub || r.userId === ctx.user.sub);
+        const bodyText = r.description ?? r.body ?? '';
+        div.innerHTML = `
+          <div class="head">
+            <span class="author">${escapeHtml(fmtAuthor(r.author))}${isMine ? ' <span class="muted">(you)</span>' : ''}</span>
+            <span class="when">${escapeHtml(fmtDate(r.createdAt))}</span>
+          </div>
+          ${r.title ? `<div class="title">${escapeHtml(r.title)}</div>` : ''}
+          <div class="body">${escapeHtml(bodyText)}</div>
+          ${
+            isMine
+              ? `<div class="actions">
+                  <button class="secondary" data-act="edit" data-id="${r.id}">Edit</button>
+                  <button class="danger" data-act="del" data-id="${r.id}">Delete</button>
+                </div>`
+              : ''
+          }
+        `;
+        div.querySelectorAll('button[data-act]').forEach((b) => {
+          b.addEventListener('click', () => {
+            const id = b.getAttribute('data-id');
+            if (b.getAttribute('data-act') === 'edit') startEditReview(r);
+            else deleteReview(id);
+          });
+        });
+        return div;
+      }
+
+      function updateMyReviewUi(items) {
+        if (!ctx.user) return;
+        const mine = items.find(
+          (r) => r.author && (r.author.sub === ctx.user.sub || r.userId === ctx.user.sub)
+        );
+        ctx.myReview = mine || null;
+        const note = document.getElementById('review-mine-note');
+        const submit = document.getElementById('review-submit');
+        if (mine) {
+          note.textContent = "You've already reviewed this — editing your existing review.";
+          document.getElementById('review-title').value = mine.title || '';
+          document.getElementById('review-body').value = mine.description ?? mine.body ?? '';
+          submit.textContent = 'Update review';
+        } else {
+          note.textContent = '';
+          submit.textContent = 'Post review';
+        }
+      }
+
+      function startEditReview(r) {
+        ctx.myReview = r;
+        document.getElementById('review-title').value = r.title || '';
+        document.getElementById('review-body').value = r.description ?? r.body ?? '';
+        document.getElementById('review-submit').textContent = 'Update review';
+        document.getElementById('review-write').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function clearReviewForm() {
+        ctx.myReview = null;
+        document.getElementById('review-title').value = '';
+        document.getElementById('review-body').value = '';
+        document.getElementById('review-submit').textContent = 'Post review';
+      }
+
+      async function submitReview() {
+        if (!ctx.user) return toast('Sign in first.', 'err');
+        const title = document.getElementById('review-title').value.trim();
+        const body = document.getElementById('review-body').value.trim();
+        if (!body) return toast('Review body is required.', 'err');
+        const btn = document.getElementById('review-submit');
+        btn.disabled = true;
+        try {
+          if (ctx.myReview) {
+            const payload = { description: body };
+            if (title) payload.title = title;
+            await api('PUT', '/reviews/' + ctx.myReview.id, payload);
+            toast('Review updated.', 'ok');
+          } else {
+            const payload = {
+              tmdbId: Number(ctx.id),
+              mediaType: ctx.type,
+              body,
+            };
+            if (title) payload.title = title;
+            await api('POST', '/reviews', payload);
+            toast('Review posted.', 'ok');
+          }
+          await loadReviews();
+        } catch (err) {
+          toast(err.message, 'err');
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      async function deleteReview(id) {
+        if (!confirm('Delete this review?')) return;
+        try {
+          await api('DELETE', '/reviews/' + id);
+          toast('Review deleted.', 'ok');
+          await loadReviews();
+        } catch (err) {
+          toast(err.message, 'err');
+        }
+      }
+    </script>
+  </body>
+</html>

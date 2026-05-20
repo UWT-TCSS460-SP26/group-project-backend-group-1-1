@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Admin · Issues</title>
+    <link
+      rel="stylesheet"
+      href="/static/styles.css"
+    />
+    <script
+      src="/static/common.js"
+      defer
+    ></script>
+    <style>
+      .issues-toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin: 12px 0;
+        flex-wrap: wrap;
+      }
+      .issues-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .issues-table th,
+      .issues-table td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        vertical-align: top;
+      }
+      .issues-table th {
+        background: var(--panel-2);
+        color: var(--muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+      }
+      .issues-table tr:last-child td {
+        border-bottom: 0;
+      }
+      .issues-table tr.row:hover {
+        background: rgba(255, 255, 255, 0.02);
+        cursor: pointer;
+      }
+      .issues-table .id {
+        font-family: ui-monospace, Menlo, monospace;
+        color: var(--muted);
+      }
+      .status-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .status-OPEN {
+        background: #1c3252;
+        color: #8ebcff;
+      }
+      .status-IN_PROGRESS {
+        background: #3a3119;
+        color: #f0c987;
+      }
+      .status-RESOLVED {
+        background: #1f3a25;
+        color: #8df0a0;
+      }
+      .status-WONT_FIX {
+        background: #3a1d1d;
+        color: #ff8b8b;
+      }
+      .status-DUPLICATE {
+        background: #2c2c3a;
+        color: #b0b0c0;
+      }
+      .detail-panel {
+        margin-top: 20px;
+        padding: 16px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .detail-panel h2 {
+        margin-top: 0;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 8px 14px;
+        font-size: 13px;
+      }
+      .detail-grid dt {
+        color: var(--muted);
+      }
+      .detail-grid dd {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .pagination {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Issues</h1>
+
+      <div
+        id="auth-warn"
+        class="muted"
+        style="margin-bottom: 12px"
+      ></div>
+
+      <div class="issues-toolbar">
+        <label class="muted">Status</label>
+        <select
+          id="filter-status"
+          onchange="
+            state.page = 1;
+            load();
+          "
+        >
+          <option value="">All</option>
+          <option value="OPEN">OPEN</option>
+          <option value="IN_PROGRESS">IN_PROGRESS</option>
+          <option value="RESOLVED">RESOLVED</option>
+          <option value="WONT_FIX">WONT_FIX</option>
+          <option value="DUPLICATE">DUPLICATE</option>
+        </select>
+        <button
+          class="secondary"
+          onclick="load()"
+        >
+          Refresh
+        </button>
+        <span
+          class="muted"
+          id="count"
+        ></span>
+      </div>
+
+      <div id="list-host">
+        <div class="empty">Loading…</div>
+      </div>
+
+      <div
+        class="pagination"
+        id="pagination"
+        style="display: none"
+      >
+        <button
+          class="secondary"
+          id="page-prev"
+          onclick="goPage(-1)"
+        >
+          Prev
+        </button>
+        <span
+          class="muted"
+          id="page-label"
+        ></span>
+        <button
+          class="secondary"
+          id="page-next"
+          onclick="goPage(1)"
+        >
+          Next
+        </button>
+      </div>
+
+      <div id="detail-host"></div>
+    </main>
+
+    <script>
+      const state = { page: 1, limit: 20, totalPages: 1, selectedId: null };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        injectHeader();
+        const user = currentUser();
+        if (!user || user.expired) {
+          document.getElementById('auth-warn').innerHTML =
+            '<span class="error">Not signed in.</span> Paste an Admin-level token above to view issues.';
+        } else if (!['Admin', 'SuperAdmin', 'Owner'].includes(user.role)) {
+          document.getElementById('auth-warn').innerHTML =
+            '<span class="error">Your role (' +
+            escapeHtml(user.role || 'User') +
+            ") may not have permission. The server will reject if you don't have at least Admin.";
+        }
+        load();
+      });
+
+      async function load() {
+        const host = document.getElementById('list-host');
+        host.innerHTML = '<div class="empty">Loading…</div>';
+        const status = document.getElementById('filter-status').value;
+        const qs = new URLSearchParams({ page: String(state.page), limit: String(state.limit) });
+        if (status) qs.set('status', status);
+        try {
+          const data = await api('GET', '/issues?' + qs.toString());
+          renderList(data.results || []);
+          state.totalPages = data.totalPages || 1;
+          document.getElementById('count').textContent =
+            (data.total ?? 0) + ' issue' + (data.total === 1 ? '' : 's');
+          const pag = document.getElementById('pagination');
+          if (state.totalPages > 1) {
+            pag.style.display = '';
+            document.getElementById('page-label').textContent =
+              'Page ' + state.page + ' of ' + state.totalPages;
+            document.getElementById('page-prev').disabled = state.page <= 1;
+            document.getElementById('page-next').disabled = state.page >= state.totalPages;
+          } else {
+            pag.style.display = 'none';
+          }
+        } catch (err) {
+          if (err.status === 401) {
+            host.innerHTML = '<div class="error">Unauthorized — paste an Admin token above.</div>';
+          } else if (err.status === 403) {
+            host.innerHTML =
+              '<div class="error">Forbidden — your role does not have permission.</div>';
+          } else {
+            host.innerHTML =
+              '<div class="error">Failed to load: ' + escapeHtml(err.message) + '</div>';
+          }
+          document.getElementById('count').textContent = '';
+          document.getElementById('pagination').style.display = 'none';
+        }
+      }
+
+      function renderList(items) {
+        const host = document.getElementById('list-host');
+        if (items.length === 0) {
+          host.innerHTML = '<div class="empty">No issues match that filter.</div>';
+          return;
+        }
+        const table = document.createElement('table');
+        table.className = 'issues-table';
+        table.innerHTML = `
+          <thead>
+            <tr><th>ID</th><th>Title</th><th>Status</th><th>Reporter</th><th>Created</th></tr>
+          </thead>
+          <tbody></tbody>
+        `;
+        const tbody = table.querySelector('tbody');
+        for (const it of items) {
+          const tr = document.createElement('tr');
+          tr.className = 'row';
+          tr.innerHTML = `
+            <td class="id">#${escapeHtml(String(it.id))}</td>
+            <td>${escapeHtml(it.title || '')}</td>
+            <td><span class="status-pill status-${escapeHtml(it.status || 'OPEN')}">${escapeHtml(it.status || 'OPEN')}</span></td>
+            <td>${escapeHtml(it.reporterEmail || '—')}</td>
+            <td>${escapeHtml(fmtDate(it.createdAt))}</td>
+          `;
+          tr.addEventListener('click', () => openDetail(it.id));
+          tbody.appendChild(tr);
+        }
+        host.innerHTML = '';
+        host.appendChild(table);
+      }
+
+      function goPage(delta) {
+        const next = state.page + delta;
+        if (next < 1 || next > state.totalPages) return;
+        state.page = next;
+        load();
+      }
+
+      async function openDetail(id) {
+        state.selectedId = id;
+        const host = document.getElementById('detail-host');
+        host.innerHTML = '<div class="detail-panel"><div class="empty">Loading issue…</div></div>';
+        host.scrollIntoView({ behavior: 'smooth' });
+        try {
+          const it = await api('GET', '/issues/' + id);
+          renderDetail(it);
+        } catch (err) {
+          host.innerHTML =
+            '<div class="detail-panel"><div class="error">Could not load: ' +
+            escapeHtml(err.message) +
+            '</div></div>';
+        }
+      }
+
+      function renderDetail(it) {
+        const host = document.getElementById('detail-host');
+        host.innerHTML = `
+          <div class="detail-panel">
+            <h2>#${escapeHtml(String(it.id))} · ${escapeHtml(it.title || '')}</h2>
+            <div style="margin-bottom: 12px">
+              <span class="status-pill status-${escapeHtml(it.status || 'OPEN')}">${escapeHtml(it.status || 'OPEN')}</span>
+              <span class="muted" style="margin-left: 8px">${escapeHtml(fmtDate(it.createdAt))}</span>
+            </div>
+            <dl class="detail-grid">
+              <dt>Description</dt><dd>${escapeHtml(it.description || '')}</dd>
+              <dt>Steps to reproduce</dt><dd>${escapeHtml(it.stepsToReproduce || '—')}</dd>
+              <dt>Reporter email</dt><dd>${escapeHtml(it.reporterEmail || '—')}</dd>
+              <dt>Updated</dt><dd>${escapeHtml(fmtDate(it.updatedAt))}</dd>
+            </dl>
+            <div class="spacer"></div>
+            <div class="row">
+              <label class="muted">Change status</label>
+              <select id="detail-status">
+                <option value="OPEN">OPEN</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="RESOLVED">RESOLVED</option>
+                <option value="WONT_FIX">WONT_FIX</option>
+                <option value="DUPLICATE">DUPLICATE</option>
+              </select>
+              <button onclick="updateStatus(${it.id})">Save</button>
+              <button class="danger" onclick="deleteIssue(${it.id})">Delete</button>
+              <button class="secondary" onclick="closeDetail()">Close</button>
+            </div>
+          </div>
+        `;
+        document.getElementById('detail-status').value = it.status || 'OPEN';
+      }
+
+      async function updateStatus(id) {
+        const status = document.getElementById('detail-status').value;
+        try {
+          await api('PATCH', '/issues/' + id, { status });
+          toast('Status updated.', 'ok');
+          await openDetail(id);
+          await load();
+        } catch (err) {
+          toast(err.message, 'err');
+        }
+      }
+
+      async function deleteIssue(id) {
+        if (!confirm('Delete issue #' + id + '?')) return;
+        try {
+          await api('DELETE', '/issues/' + id);
+          toast('Deleted.', 'ok');
+          closeDetail();
+          await load();
+        } catch (err) {
+          toast(err.message, 'err');
+        }
+      }
+
+      function closeDetail() {
+        state.selectedId = null;
+        document.getElementById('detail-host').innerHTML = '';
+      }
+    </script>
+  </body>
+</html>

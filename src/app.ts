@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import fs from 'fs';
+import path from 'path';
 import YAML from 'yaml';
 import { apiReference } from '@scalar/express-api-reference';
 import dotenv from 'dotenv';
@@ -56,6 +57,29 @@ app.get('/openapi.json', (_request: Request, response: Response) => {
   return response.json(loadSpec());
 });
 app.use('/api-docs', apiReference({ spec: { url: '/openapi.json' } }));
+
+// Simple HTML test page for hitting endpoints from a browser
+app.get('/test', (_request: Request, response: Response) => {
+  response.sendFile(path.resolve('public/test.html'));
+});
+
+// User-facing frontend (static HTML served from public/app, shared assets at /static)
+app.use('/static', express.static('public/app'));
+app.get('/', (_request: Request, response: Response) => {
+  response.sendFile(path.resolve('public/app/index.html'));
+});
+app.get('/search', (_request: Request, response: Response) => {
+  response.sendFile(path.resolve('public/app/search.html'));
+});
+app.get('/title/:type/:id', (_request: Request, response: Response) => {
+  response.sendFile(path.resolve('public/app/title.html'));
+});
+app.get('/report', (_request: Request, response: Response) => {
+  response.sendFile(path.resolve('public/app/report.html'));
+});
+app.get('/admin/issues', (_request: Request, response: Response) => {
+  response.sendFile(path.resolve('public/app/admin-issues.html'));
+});
 
 // MARK: Health
 app.get('/health', (_request: Request, response: Response) => {

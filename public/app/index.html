@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Movie Hub</title>
+    <link
+      rel="stylesheet"
+      href="/static/styles.css"
+    />
+    <script
+      src="/static/common.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <main>
+      <h1>Find a movie or show</h1>
+      <p class="muted">
+        Search TMDB, read what people are saying, and post your own rating and review.
+      </p>
+      <div class="spacer"></div>
+      <form
+        class="header-search"
+        style="max-width: 640px"
+        onsubmit="return submitSearch(event);"
+      >
+        <select id="big-type">
+          <option value="movie">Movies</option>
+          <option value="tv">TV</option>
+        </select>
+        <input
+          id="big-q"
+          type="search"
+          placeholder="e.g. Fight Club, Game of Thrones"
+          autofocus
+        />
+        <button type="submit">Search</button>
+      </form>
+      <h2>How it works</h2>
+      <ul class="muted">
+        <li>Search by title. Click a result to see details and what people thought.</li>
+        <li>Paste a Bearer token into the bar above to post a rating or write a review.</li>
+      </ul>
+    </main>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        injectHeader();
+        const bigType = document.getElementById('big-type');
+        const bigQ = document.getElementById('big-q');
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('type')) bigType.value = params.get('type');
+        if (params.get('q')) bigQ.value = params.get('q');
+        document.querySelector('main form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const q = bigQ.value.trim();
+          if (!q) return;
+          window.location.href =
+            '/search?' + new URLSearchParams({ type: bigType.value, q }).toString();
+        });
+      });
+    </script>
+  </body>
+</html>

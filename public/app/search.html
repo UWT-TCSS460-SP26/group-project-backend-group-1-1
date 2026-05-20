@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Search · Movie Hub</title>
+    <link
+      rel="stylesheet"
+      href="/static/styles.css"
+    />
+    <script
+      src="/static/common.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <main>
+      <h1 id="heading">Search</h1>
+      <div
+        id="status"
+        class="muted"
+      ></div>
+      <div
+        id="results"
+        class="grid"
+      ></div>
+      <div class="spacer"></div>
+      <div class="center">
+        <button
+          id="more"
+          class="secondary"
+          style="display: none"
+          onclick="loadMore()"
+        >
+          Load more
+        </button>
+      </div>
+    </main>
+
+    <script>
+      let state = { type: 'movie', q: '', page: 1, loading: false, done: false };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        state.type = params.get('type') || 'movie';
+        state.q = (params.get('q') || '').trim();
+        injectHeader({ type: state.type, q: state.q });
+
+        const label = state.type === 'tv' ? 'TV results' : 'Movie results';
+        document.getElementById('heading').textContent = state.q
+          ? `${label} for "${state.q}"`
+          : label;
+        document.title = (state.q || 'Search') + ' · Movie Hub';
+
+        if (!state.q) {
+          document.getElementById('status').textContent = 'Enter a search query above.';
+          return;
+        }
+        loadMore();
+      });
+
+      async function loadMore() {
+        if (state.loading || state.done) return;
+        state.loading = true;
+        const btn = document.getElementById('more');
+        btn.disabled = true;
+        const statusEl = document.getElementById('status');
+        statusEl.textContent = state.page === 1 ? 'Loading…' : 'Loading more…';
+        try {
+          const path =
+            '/' +
+            state.type +
+            '/search?query=' +
+            encodeURIComponent(state.q) +
+            '&page=' +
+            state.page;
+          const data = await api('GET', path);
+          const items = Array.isArray(data?.results) ? data.results : [];
+          renderResults(items);
+          if (items.length === 0 && state.page === 1) {
+            statusEl.innerHTML = '<div class="empty">No results.</div>';
+          } else {
+            statusEl.textContent = '';
+          }
+          if (items.length < 20) {
+            state.done = true;
+            btn.style.display = 'none';
+          } else {
+            state.page += 1;
+            btn.style.display = '';
+            btn.disabled = false;
+          }
+        } catch (err) {
+          statusEl.innerHTML = '<span class="error">Error: ' + escapeHtml(err.message) + '</span>';
+          btn.disabled = false;
+        } finally {
+          state.loading = false;
+        }
+      }
+
+      function renderResults(items) {
+        const grid = document.getElementById('results');
+        for (const item of items) {
+          const year = fmtYear(item.release_date || item.first_air_date);
+          const poster = posterUrlSmall(item.poster_path);
+          const href = '/title/' + state.type + '/' + item.id;
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <a href="${href}">
+              <div class="poster" ${poster ? `style="background-image: url('${poster}')"` : ''}>
+                ${poster ? '' : 'No image'}
+              </div>
+              <div class="meta">
+                <div class="title">${escapeHtml(item.title || item.name || 'Untitled')}</div>
+                <div class="sub">${year || '—'}</div>
+              </div>
+            </a>
+          `;
+          grid.appendChild(card);
+        }
+      }
+    </script>
+  </body>
+</html>

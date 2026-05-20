@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Report a bug · Movie Hub</title>
+    <link
+      rel="stylesheet"
+      href="/static/styles.css"
+    />
+    <script
+      src="/static/common.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <main>
+      <h1>Report a bug</h1>
+      <p class="muted">
+        Found something broken or surprising? Tell us what happened. No sign-in required.
+      </p>
+
+      <div
+        id="form-card"
+        class="write-card"
+        style="margin-top: 16px"
+      >
+        <label for="bug-title">Title <span class="muted">(required)</span></label>
+        <input
+          id="bug-title"
+          type="text"
+          placeholder="Short summary, e.g. Search returns 500 on empty query"
+        />
+        <div class="gap"></div>
+
+        <label for="bug-description">Description <span class="muted">(required)</span></label>
+        <textarea
+          id="bug-description"
+          placeholder="What happened? What did you expect?"
+        ></textarea>
+        <div class="gap"></div>
+
+        <label for="bug-steps">Steps to reproduce <span class="muted">(optional)</span></label>
+        <textarea
+          id="bug-steps"
+          placeholder="1. Go to ...\n2. Click ...\n3. See ..."
+        ></textarea>
+        <div class="gap"></div>
+
+        <label for="bug-email"
+          >Your email <span class="muted">(optional, so we can follow up)</span></label
+        >
+        <input
+          id="bug-email"
+          type="email"
+          placeholder="you@example.com"
+        />
+        <div class="gap"></div>
+
+        <div class="row">
+          <button
+            id="submit-btn"
+            onclick="submitBug()"
+          >
+            Submit report
+          </button>
+          <button
+            class="secondary"
+            onclick="resetForm()"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="success"
+        style="display: none; margin-top: 20px"
+      >
+        <div
+          class="write-card"
+          style="border-color: var(--ok)"
+        >
+          <h2 style="margin-top: 0">Thanks — report submitted.</h2>
+          <p class="muted">
+            Reported as issue
+            <span
+              class="badge"
+              id="ok-id"
+            ></span>
+            with status
+            <span
+              class="badge"
+              id="ok-status"
+            ></span
+            >.
+          </p>
+          <div class="row">
+            <button
+              class="secondary"
+              onclick="
+                resetForm();
+                document.getElementById('success').style.display = 'none';
+                document.getElementById('form-card').style.display = '';
+              "
+            >
+              Report another
+            </button>
+            <a href="/"
+              ><button
+                class="secondary"
+                type="button"
+              >
+                Back to home
+              </button></a
+            >
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', () => injectHeader());
+
+      function resetForm() {
+        ['bug-title', 'bug-description', 'bug-steps', 'bug-email'].forEach((id) => {
+          document.getElementById(id).value = '';
+        });
+      }
+
+      async function submitBug() {
+        const title = document.getElementById('bug-title').value.trim();
+        const description = document.getElementById('bug-description').value.trim();
+        const steps = document.getElementById('bug-steps').value.trim();
+        const email = document.getElementById('bug-email').value.trim();
+
+        if (!title) return toast('Title is required.', 'err');
+        if (!description) return toast('Description is required.', 'err');
+
+        const payload = { title, description };
+        if (steps) payload.stepsToReproduce = steps;
+        if (email) payload.reporterEmail = email;
+
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        try {
+          const issue = await api('POST', '/issues', payload);
+          document.getElementById('ok-id').textContent = '#' + issue.id;
+          document.getElementById('ok-status').textContent = issue.status || 'OPEN';
+          document.getElementById('form-card').style.display = 'none';
+          document.getElementById('success').style.display = '';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          resetForm();
+          toast('Report submitted.', 'ok');
+        } catch (err) {
+          toast(err.message, 'err');
+        } finally {
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

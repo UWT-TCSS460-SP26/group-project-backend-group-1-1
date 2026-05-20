@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>API Test Page</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <style>
+      :root {
+        --bg: #0f1115;
+        --panel: #171a21;
+        --panel-2: #1f232c;
+        --text: #e6e8eb;
+        --muted: #8a93a3;
+        --accent: #6aa6ff;
+        --ok: #7ce38b;
+        --err: #ff8b8b;
+        --border: #2a2f3a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 20px;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 8px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .row > label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      input,
+      textarea,
+      select,
+      button {
+        font-family: inherit;
+        font-size: 13px;
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 10px;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: 1px solid var(--accent);
+      }
+      button {
+        cursor: pointer;
+        background: var(--accent);
+        color: #0b1220;
+        font-weight: 600;
+        border-color: transparent;
+      }
+      button:hover {
+        filter: brightness(1.08);
+      }
+      button.secondary {
+        background: var(--panel-2);
+        color: var(--text);
+      }
+      main {
+        padding: 16px 20px 80px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 1000px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      section h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 10px;
+        color: var(--muted);
+      }
+      .endpoint {
+        padding: 8px 0;
+        border-top: 1px dashed var(--border);
+      }
+      .endpoint:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
+      .endpoint .title {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+      .method {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+      }
+      .GET {
+        background: #1c3252;
+        color: #8ebcff;
+      }
+      .POST {
+        background: #1f3a25;
+        color: #8df0a0;
+      }
+      .PUT {
+        background: #3a3119;
+        color: #f0c987;
+      }
+      .PATCH {
+        background: #3a3119;
+        color: #f0c987;
+      }
+      .DELETE {
+        background: #3a1d1d;
+        color: #ff8b8b;
+      }
+      .path {
+        font-family: ui-monospace, monospace;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .endpoint .row {
+        margin-bottom: 6px;
+      }
+      .endpoint input,
+      .endpoint textarea {
+        flex: 1;
+        min-width: 90px;
+      }
+      .endpoint textarea {
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        min-height: 60px;
+        resize: vertical;
+        width: 100%;
+      }
+      #response {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #0a0c10;
+        border-top: 1px solid var(--border);
+        max-height: 40vh;
+        overflow: auto;
+        padding: 10px 20px;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      #response .meta {
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      #response .ok {
+        color: var(--ok);
+      }
+      #response .err {
+        color: var(--err);
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>API Test Page</h1>
+      <div class="row">
+        <label>Base URL</label>
+        <input
+          id="baseUrl"
+          value=""
+          style="width: 240px"
+        />
+        <label>Bearer token</label>
+        <input
+          id="token"
+          placeholder="paste JWT (optional)"
+          style="flex: 1; min-width: 280px"
+        />
+        <button
+          class="secondary"
+          onclick="saveConfig()"
+        >
+          Save
+        </button>
+        <button
+          class="secondary"
+          onclick="clearConfig()"
+        >
+          Clear
+        </button>
+        <span class="hint">Stored in localStorage. Token used for Authorization: Bearer.</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- HEALTH -->
+      <section>
+        <h2>Health</h2>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/health</span>
+          </div>
+          <button onclick="send('GET', '/health')">Send</button>
+        </div>
+      </section>
+
+      <!-- MOVIES -->
+      <section>
+        <h2>Movies</h2>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/movies/popular?page=</span>
+          </div>
+          <div class="row">
+            <input
+              id="movPopPage"
+              placeholder="page"
+              value="1"
+              style="width: 80px"
+            />
+            <button onclick="send('GET', '/movies/popular?page=' + val('movPopPage'))">Send</button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/movies/search?q=&amp;page=</span>
+          </div>
+          <div class="row">
+            <input
+              id="movSearchQ"
+              placeholder="query"
+            />
+            <input
+              id="movSearchPage"
+              placeholder="page"
+              value="1"
+              style="width: 80px"
+            />
+            <button
+              onclick="
+                send(
+                  'GET',
+                  '/movies/search?q=' +
+                    encodeURIComponent(val('movSearchQ')) +
+                    '&page=' +
+                    val('movSearchPage')
+                )
+              "
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/movies/:id</span>
+          </div>
+          <div class="row">
+            <input
+              id="movId"
+              placeholder="tmdb id (e.g. 550)"
+            />
+            <button onclick="send('GET', '/movies/' + val('movId'))">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TV -->
+      <section>
+        <h2>TV</h2>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/tv/popular?page=</span>
+          </div>
+          <div class="row">
+            <input
+              id="tvPopPage"
+              placeholder="page"
+              value="1"
+              style="width: 80px"
+            />
+            <button onclick="send('GET', '/tv/popular?page=' + val('tvPopPage'))">Send</button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/tv/search?q=&amp;page=</span>
+          </div>
+          <div class="row">
+            <input
+              id="tvSearchQ"
+              placeholder="query"
+            />
+            <input
+              id="tvSearchPage"
+              placeholder="page"
+              value="1"
+              style="width: 80px"
+            />
+            <button
+              onclick="
+                send(
+                  'GET',
+                  '/tv/search?q=' +
+                    encodeURIComponent(val('tvSearchQ')) +
+                    '&page=' +
+                    val('tvSearchPage')
+                )
+              "
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/tv/:id (and /:id/details)</span>
+          </div>
+          <div class="row">
+            <input
+              id="tvId"
+              placeholder="tmdb id (e.g. 1399)"
+            />
+            <button onclick="send('GET', '/tv/' + val('tvId'))">Get</button>
+            <button onclick="send('GET', '/tv/' + val('tvId') + '/details')">Get details</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RATINGS -->
+      <section>
+        <h2>Ratings</h2>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span
+            ><span class="path">/ratings/top-rated · /ratings/most-reviewed</span>
+          </div>
+          <div class="row">
+            <button onclick="send('GET', '/ratings/top-rated')">Top rated</button>
+            <button onclick="send('GET', '/ratings/most-reviewed')">Most reviewed</button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span
+            ><span class="path">/ratings/media/:mediaType/:tmdbId</span>
+          </div>
+          <div class="row">
+            <select id="rateListType">
+              <option>movie</option>
+              <option>tv</option>
+            </select>
+            <input
+              id="rateListId"
+              placeholder="tmdb id"
+            />
+            <button
+              onclick="
+                send('GET', '/ratings/media/' + val('rateListType') + '/' + val('rateListId'))
+              "
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span
+            ><span class="path">/ratings/me · /ratings/me/items</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <div class="row">
+            <button onclick="send('GET', '/ratings/me')">My ratings</button>
+            <button onclick="send('GET', '/ratings/me/items')">My rated items</button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method POST">POST</span><span class="path">/ratings</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <div class="row">
+            <select id="rateCreateType">
+              <option>movie</option>
+              <option>tv</option>
+            </select>
+            <input
+              id="rateCreateId"
+              placeholder="tmdb id"
+            />
+            <input
+              id="rateCreateScore"
+              placeholder="score 0-10"
+              value="8"
+              style="width: 90px"
+            />
+            <button
+              onclick="
+                send('POST', '/ratings', {
+                  tmdbId: Number(val('rateCreateId')),
+                  mediaType: val('rateCreateType'),
+                  score: Number(val('rateCreateScore')),
+                })
+              "
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method PUT">PUT</span><span class="path">/ratings/:id</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <div class="row">
+            <input
+              id="rateUpdId"
+              placeholder="rating id"
+            />
+            <input
+              id="rateUpdScore"
+              placeholder="score 0-10"
+              value="9"
+              style="width: 90px"
+            />
+            <button
+              onclick="
+                send('PUT', '/ratings/' + val('rateUpdId'), { score: Number(val('rateUpdScore')) })
+              "
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method DELETE">DELETE</span><span class="path">/ratings/:id</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <div class="row">
+            <input
+              id="rateDelId"
+              placeholder="rating id"
+            />
+            <button onclick="send('DELETE', '/ratings/' + val('rateDelId'))">Send</button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/ratings/:id</span>
+          </div>
+          <div class="row">
+            <input
+              id="rateGetId"
+              placeholder="rating id"
+            />
+            <button onclick="send('GET', '/ratings/' + val('rateGetId'))">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- REVIEWS -->
+      <section>
+        <h2>Reviews</h2>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span
+            ><span class="path">/reviews/media/:mediaType/:tmdbId</span>
+          </div>
+          <div class="row">
+            <select id="revListType">
+              <option>movie</option>
+              <option>tv</option>
+            </select>
+            <input
+              id="revListId"
+              placeholder="tmdb id"
+            />
+            <button
+              onclick="send('GET', '/reviews/media/' + val('revListType') + '/' + val('revListId'))"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/reviews/me</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <button onclick="send('GET', '/reviews/me')">Send</button>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method POST">POST</span><span class="path">/reviews</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <div class="row">
+            <select id="revCreateType">
+              <option>movie</option>
+              <option>tv</option>
+            </select>
+            <input
+              id="revCreateId"
+              placeholder="tmdb id"
+            />
+            <input
+              id="revCreateTitle"
+              placeholder="title (optional)"
+            />
+          </div>
+          <textarea
+            id="revCreateBody"
+            placeholder="review body (required, max 5000 chars)"
+          ></textarea>
+          <button
+            onclick="
+              send('POST', '/reviews', {
+                tmdbId: Number(val('revCreateId')),
+                mediaType: val('revCreateType'),
+                title: val('revCreateTitle') || undefined,
+                body: val('revCreateBody'),
+              })
+            "
+          >
+            Send
+          </button>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method PUT">PUT</span><span class="path">/reviews/:id</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <div class="row">
+            <input
+              id="revUpdId"
+              placeholder="review id"
+            />
+            <input
+              id="revUpdTitle"
+              placeholder="title (optional)"
+            />
+          </div>
+          <textarea
+            id="revUpdDesc"
+            placeholder="description (optional)"
+          ></textarea>
+          <button
+            onclick="
+              send(
+                'PUT',
+                '/reviews/' + val('revUpdId'),
+                Object.fromEntries(
+                  Object.entries({
+                    title: val('revUpdTitle') || undefined,
+                    description: val('revUpdDesc') || undefined,
+                  }).filter(([, v]) => v !== undefined)
+                )
+              )
+            "
+          >
+            Send
+          </button>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method DELETE">DELETE</span><span class="path">/reviews/:id</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <div class="row">
+            <input
+              id="revDelId"
+              placeholder="review id"
+            />
+            <button onclick="send('DELETE', '/reviews/' + val('revDelId'))">Send</button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/reviews/:id</span>
+          </div>
+          <div class="row">
+            <input
+              id="revGetId"
+              placeholder="review id"
+            />
+            <button onclick="send('GET', '/reviews/' + val('revGetId'))">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ISSUES -->
+      <section>
+        <h2>Issues</h2>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method POST">POST</span><span class="path">/issues</span
+            ><span class="hint">(public)</span>
+          </div>
+          <div class="row">
+            <input
+              id="issTitle"
+              placeholder="title"
+            />
+            <input
+              id="issEmail"
+              placeholder="reporter email (optional)"
+            />
+          </div>
+          <textarea
+            id="issDesc"
+            placeholder="description"
+          ></textarea>
+          <textarea
+            id="issSteps"
+            placeholder="steps to reproduce (optional)"
+          ></textarea>
+          <button
+            onclick="
+              send(
+                'POST',
+                '/issues',
+                Object.fromEntries(
+                  Object.entries({
+                    title: val('issTitle'),
+                    description: val('issDesc'),
+                    stepsToReproduce: val('issSteps') || undefined,
+                    reporterEmail: val('issEmail') || undefined,
+                  }).filter(([, v]) => v !== undefined)
+                )
+              )
+            "
+          >
+            Send
+          </button>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/issues</span
+            ><span class="hint">(admin+)</span>
+          </div>
+          <div class="row">
+            <select id="issListStatus">
+              <option value="">any status</option>
+              <option>OPEN</option>
+              <option>IN_PROGRESS</option>
+              <option>RESOLVED</option>
+              <option>WONT_FIX</option>
+              <option>DUPLICATE</option>
+            </select>
+            <button
+              onclick="
+                send(
+                  'GET',
+                  '/issues' + (val('issListStatus') ? '?status=' + val('issListStatus') : '')
+                )
+              "
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method GET">GET</span><span class="path">/issues/:id</span
+            ><span class="hint">(admin+)</span>
+          </div>
+          <div class="row">
+            <input
+              id="issGetId"
+              placeholder="id"
+            />
+            <button onclick="send('GET', '/issues/' + val('issGetId'))">Send</button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method PATCH">PATCH</span><span class="path">/issues/:id</span
+            ><span class="hint">(admin+)</span>
+          </div>
+          <div class="row">
+            <input
+              id="issPatchId"
+              placeholder="id"
+            />
+            <select id="issPatchStatus">
+              <option value="">(no status change)</option>
+              <option>OPEN</option>
+              <option>IN_PROGRESS</option>
+              <option>RESOLVED</option>
+              <option>WONT_FIX</option>
+              <option>DUPLICATE</option>
+            </select>
+            <button
+              onclick="
+                send(
+                  'PATCH',
+                  '/issues/' + val('issPatchId'),
+                  val('issPatchStatus') ? { status: val('issPatchStatus') } : {}
+                )
+              "
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method DELETE">DELETE</span><span class="path">/issues/:id</span
+            ><span class="hint">(admin+)</span>
+          </div>
+          <div class="row">
+            <input
+              id="issDelId"
+              placeholder="id"
+            />
+            <button onclick="send('DELETE', '/issues/' + val('issDelId'))">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section>
+        <h2>Users</h2>
+        <div class="endpoint">
+          <div class="title">
+            <span class="method POST">POST</span><span class="path">/users/add-subject-id</span
+            ><span class="hint">(auth)</span>
+          </div>
+          <button onclick="send('POST', '/users/add-subject-id', {})">Send</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="response"><div class="meta">Response will appear here.</div></div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const val = (id) => $(id).value.trim();
+      const out = $('response');
+
+      // Default base URL = current origin
+      $('baseUrl').value = localStorage.getItem('baseUrl') || window.location.origin;
+      $('token').value = localStorage.getItem('token') || '';
+
+      function saveConfig() {
+        localStorage.setItem('baseUrl', val('baseUrl'));
+        localStorage.setItem('token', val('token'));
+        flash('Saved.');
+      }
+      function clearConfig() {
+        localStorage.removeItem('baseUrl');
+        localStorage.removeItem('token');
+        $('baseUrl').value = window.location.origin;
+        $('token').value = '';
+        flash('Cleared.');
+      }
+      function flash(msg) {
+        out.innerHTML = '<div class="meta">' + msg + '</div>';
+      }
+
+      async function send(method, path, body) {
+        const base = val('baseUrl').replace(/\/$/, '');
+        const url = base + path;
+        const headers = { Accept: 'application/json' };
+        const token = val('token');
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        const init = { method, headers };
+        if (body !== undefined && body !== null) {
+          headers['Content-Type'] = 'application/json';
+          init.body = JSON.stringify(body);
+        }
+        const started = performance.now();
+        out.innerHTML = '<div class="meta">' + method + ' ' + url + ' …</div>';
+        try {
+          const res = await fetch(url, init);
+          const ms = Math.round(performance.now() - started);
+          const text = await res.text();
+          let pretty = text;
+          try {
+            pretty = JSON.stringify(JSON.parse(text), null, 2);
+          } catch {}
+          const status = res.ok
+            ? '<span class="ok">' + res.status + ' ' + res.statusText + '</span>'
+            : '<span class="err">' + res.status + ' ' + res.statusText + '</span>';
+          out.innerHTML =
+            '<div class="meta">' +
+            method +
+            ' ' +
+            url +
+            ' • ' +
+            status +
+            ' • ' +
+            ms +
+            'ms' +
+            (init.body ? '\nRequest: ' + init.body : '') +
+            '</div>' +
+            pretty;
+        } catch (err) {
+          out.innerHTML =
+            '<div class="meta"><span class="err">Network error</span> ' +
+            method +
+            ' ' +
+            url +
+            '</div>' +
+            (err && err.message ? err.message : String(err));
+        }
+      }
+    </script>
+  </body>
+</html>
