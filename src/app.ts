@@ -20,6 +20,9 @@ const app = express();
 const rawAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS || '';
 const allowedOrigins = rawAllowedOrigins.split(',').map((o) => o.trim());
 
+// Common development origins allowed by default
+const devOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:4173'];
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -31,7 +34,7 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin)) {
+      if (allowedOrigins.includes(origin) || devOrigins.includes(origin)) {
         callback(null, true);
       } else {
         // eslint-disable-next-line no-console
