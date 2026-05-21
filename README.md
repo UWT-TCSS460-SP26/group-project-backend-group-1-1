@@ -10,19 +10,19 @@ Express + TypeScript API for the TCSS 460 group project.
 
 1.  **Endpoints:** Full documentation is available at [/api-docs](https://tcss460-team-1-api.onrender.com/api-docs).
 2.  **Authentication:**
-    -   This API requires RS256 JWTs issued by **Auth²**.
-    -   **Issuer:** `https://tcss-460-iam.onrender.com`
-    -   **Audience:** `group-1-api`
-    -   **Token Playground:** Use the [Auth² Token Playground](https://tcss-460-iam.onrender.com/playground) to generate test tokens. Ensure you select the correct audience.
+    - This API requires RS256 JWTs issued by **Auth²**.
+    - **Issuer:** `https://tcss-460-iam.onrender.com`
+    - **Audience:** `group-1-api`
+    - **Token Playground:** Use the [Auth² Token Playground](https://tcss-460-iam.onrender.com/playground) to generate test tokens. Ensure you select the correct audience.
 3.  **CORS & Origins:**
-    -   By default, `http://localhost:3000`, `http://localhost:5173`, and `http://localhost:4173` are allowed in development environments.
-    -   To add your production origin, please provide your URL to the backend team. We can add it via the `CORS_ALLOWED_ORIGINS` environment variable (comma-separated list).
+    - By default, `http://localhost:3000`, `http://localhost:5173`, and `http://localhost:4173` are allowed in development environments.
+    - To add your production origin, please provide your URL to the backend team. We can add it via the `CORS_ALLOWED_ORIGINS` environment variable (comma-separated list).
 
 ## Known Limits & Quirks
 
--   **TMDB Rate Limits:** We currently do not cache TMDB responses. Excessive requests may result in 429 errors from the upstream provider.
--   **Lazy User Syncing:** User profiles (username, email) are synchronized from Auth² only upon their *first* authenticated request to a protected endpoint.
--   **Public Data:** All ratings, reviews, and issues are publicly readable. Write operations require a valid JWT.
+- **TMDB Rate Limits:** We currently do not cache TMDB responses. Excessive requests may result in 429 errors from the upstream provider.
+- **Lazy User Syncing:** User profiles (username, email) are synchronized from Auth² only upon their _first_ authenticated request to a protected endpoint.
+- **Public Data:** All ratings, reviews, and issues are publicly readable. Write operations require a valid JWT.
 
 ## Bug Tracker (Planned)
 
