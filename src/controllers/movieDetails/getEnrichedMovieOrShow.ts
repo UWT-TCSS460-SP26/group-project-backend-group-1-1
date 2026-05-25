@@ -15,9 +15,10 @@ export const getEnrichedMovieOrShow = async (
 
   try {
     // 1. Fetch TMDB data
+
     const tmdbResponse = await fetch(`https://api.themoviedb.org/3/${mediaType}/${id}`, {
       headers: {
-        Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
+        Authorization: `Bearer ${process.env['API-KEY']}`,
       },
     });
 
@@ -45,7 +46,8 @@ export const getEnrichedMovieOrShow = async (
       },
       reviews,
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error(error);
     response.status(500).json({ error: 'Failed to fetch enriched data' });
   }
 };
