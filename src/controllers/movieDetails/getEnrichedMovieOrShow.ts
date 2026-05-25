@@ -17,12 +17,11 @@ export const getEnrichedMovieOrShow = async (
     // 1. Fetch TMDB data
     const tmdbResponse = await fetch(`https://api.themoviedb.org/3/${mediaType}/${id}`, {
       headers: {
-        Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
+        Authorization: `Bearer ${process.env['API-KEY']}`,
       },
     });
 
     const tmdbData = await tmdbResponse.json();
-
     // 2. Fetch ratings
     const ratings = await prisma.rating.aggregate({
       where: { tmdbId: String(id), mediaType },
@@ -45,7 +44,8 @@ export const getEnrichedMovieOrShow = async (
       },
       reviews,
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error(error);
     response.status(500).json({ error: 'Failed to fetch enriched data' });
   }
 };
